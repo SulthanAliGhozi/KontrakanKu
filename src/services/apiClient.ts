@@ -48,31 +48,31 @@ export const api = {
     const params = new URLSearchParams();
     if (houseId) params.append('houseId', houseId);
     if (userId) params.append('userId', userId);
-    const res = await fetch(API_BASE_URL + `//api/current-state?${params.toString()}`);
+    const res = await fetch(API_BASE_URL + `/api/current-state?${params.toString()}`);
     if (!res.ok) throw new Error('Gagal mengambil data rumah');
     return res.json();
   },
 
   async getUsers(): Promise<User[]> {
-    const res = await fetch(API_BASE_URL + '//api/users');
+    const res = await fetch(API_BASE_URL + '/api/users');
     const data = await res.json();
     return data.users;
   },
 
   async getNeeds(houseId: string): Promise<Need[]> {
-    const res = await fetch(API_BASE_URL + `//api/needs?houseId=${houseId}`);
+    const res = await fetch(API_BASE_URL + `/api/needs?houseId=${houseId}`);
     const data = await res.json();
     return data.needs;
   },
 
   async getNeedDetail(needId: string): Promise<any> {
-    const res = await fetch(API_BASE_URL + `//api/needs/${needId}`);
+    const res = await fetch(API_BASE_URL + `/api/needs/${needId}`);
     if (!res.ok) throw new Error('Kebutuhan tidak ditemukan');
     return res.json();
   },
 
   async createNeed(payload: Partial<Need> & { actorId?: string }): Promise<Need> {
-    const res = await fetch(API_BASE_URL + '//api/needs', {
+    const res = await fetch(API_BASE_URL + '/api/needs', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
@@ -86,7 +86,7 @@ export const api = {
   },
 
   async updateNeed(needId: string, payload: Partial<Need> & { actorId?: string }): Promise<Need> {
-    const res = await fetch(API_BASE_URL + `//api/needs/${needId}`, {
+    const res = await fetch(API_BASE_URL + `/api/needs/${needId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
@@ -100,7 +100,7 @@ export const api = {
   },
 
   async archiveNeed(needId: string, archived: boolean = true, actorId?: string): Promise<Need> {
-    const res = await fetch(API_BASE_URL + `//api/needs/${needId}/archive`, {
+    const res = await fetch(API_BASE_URL + `/api/needs/${needId}/archive`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ archived, actorId }),
@@ -114,7 +114,7 @@ export const api = {
   },
 
   async configureNeed(needId: string, payload: any): Promise<Need> {
-    const res = await fetch(API_BASE_URL + `//api/needs/${needId}/configure`, {
+    const res = await fetch(API_BASE_URL + `/api/needs/${needId}/configure`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
@@ -128,7 +128,7 @@ export const api = {
   },
 
   async login(email: string, password?: string): Promise<any> {
-    const res = await fetch(API_BASE_URL + '//api/auth/login', {
+    const res = await fetch(API_BASE_URL + '/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
@@ -141,7 +141,7 @@ export const api = {
   },
 
   async register(name: string, email: string, phone?: string, password?: string): Promise<any> {
-    const res = await fetch(API_BASE_URL + '//api/auth/register', {
+    const res = await fetch(API_BASE_URL + '/api/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, email, phone, password }),
@@ -154,7 +154,7 @@ export const api = {
   },
 
   async getUserQRIS(userId: string): Promise<any> {
-    const res = await fetch(API_BASE_URL + `//api/users/${userId}/qris`);
+    const res = await fetch(API_BASE_URL + `/api/users/${userId}/qris`);
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
       throw new Error(err.error || 'Gagal memuat QRIS pengguna');
@@ -163,7 +163,7 @@ export const api = {
   },
 
   async updateUserQRIS(userId: string, qrisPayload: string, merchantName?: string): Promise<any> {
-    const res = await fetch(API_BASE_URL + `//api/users/${userId}/qris`, {
+    const res = await fetch(API_BASE_URL + `/api/users/${userId}/qris`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ qrisPayload, merchantName }),
@@ -177,7 +177,7 @@ export const api = {
 
   // --- HOUSE & MEMBER MANAGEMENT ---
   async createHouse(payload: { name: string; address?: string; creatorUserId: string }): Promise<{ house: House; member: HouseMember }> {
-    const res = await fetch(API_BASE_URL + '//api/houses', {
+    const res = await fetch(API_BASE_URL + '/api/houses', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
@@ -192,14 +192,14 @@ export const api = {
   async getUserHouses(userId?: string): Promise<{ house: House; role: string; memberId: string; memberCount: number }[]> {
     const params = new URLSearchParams();
     if (userId) params.append('userId', userId);
-    const res = await fetch(API_BASE_URL + `//api/user-houses?${params.toString()}`);
+    const res = await fetch(API_BASE_URL + `/api/user-houses?${params.toString()}`);
     if (!res.ok) throw new Error('Gagal mengambil daftar kontrakan');
     const data = await res.json();
     return data.userHouses;
   },
 
   async addHouseMember(houseId: string, payload: { userId: string; role?: string }): Promise<HouseMember> {
-    const res = await fetch(API_BASE_URL + `//api/houses/${houseId}/members`, {
+    const res = await fetch(API_BASE_URL + `/api/houses/${houseId}/members`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
@@ -213,7 +213,7 @@ export const api = {
   },
 
   async updateHouseMemberRole(houseId: string, memberId: string, role: string): Promise<HouseMember> {
-    const res = await fetch(API_BASE_URL + `//api/houses/${houseId}/members/${memberId}`, {
+    const res = await fetch(API_BASE_URL + `/api/houses/${houseId}/members/${memberId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ role }),
@@ -224,7 +224,7 @@ export const api = {
   },
 
   async removeHouseMember(houseId: string, memberId: string): Promise<boolean> {
-    const res = await fetch(API_BASE_URL + `//api/houses/${houseId}/members/${memberId}`, {
+    const res = await fetch(API_BASE_URL + `/api/houses/${houseId}/members/${memberId}`, {
       method: 'DELETE',
     });
     if (!res.ok) throw new Error('Gagal menghapus anggota');
@@ -233,7 +233,7 @@ export const api = {
   },
 
   async joinHouseByInvite(payload: { inviteCode: string; userId: string }): Promise<{ house: House; member: HouseMember }> {
-    const res = await fetch(API_BASE_URL + '//api/houses/join', {
+    const res = await fetch(API_BASE_URL + '/api/houses/join', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
@@ -255,7 +255,7 @@ export const api = {
     date: string;
     notes?: string;
   }): Promise<{ purchase: NeedPurchase; need: Need; nextDutyMemberId?: string }> {
-    const res = await fetch(API_BASE_URL + '//api/needs/purchase', {
+    const res = await fetch(API_BASE_URL + '/api/needs/purchase', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
@@ -275,7 +275,7 @@ export const api = {
     note?: string;
     transferToMemberId?: string;
   }): Promise<any> {
-    const res = await fetch(API_BASE_URL + '//api/needs/duty-action', {
+    const res = await fetch(API_BASE_URL + '/api/needs/duty-action', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
@@ -285,13 +285,13 @@ export const api = {
   },
 
   async getFinanceOverview(houseId: string): Promise<any> {
-    const res = await fetch(API_BASE_URL + `//api/finance/overview?houseId=${houseId}`);
+    const res = await fetch(API_BASE_URL + `/api/finance/overview?houseId=${houseId}`);
     if (!res.ok) throw new Error('Gagal mengambil data keuangan');
     return res.json();
   },
 
   async createSplitBill(payload: any): Promise<SplitBill> {
-    const res = await fetch(API_BASE_URL + '//api/finance/split-bill', {
+    const res = await fetch(API_BASE_URL + '/api/finance/split-bill', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
@@ -305,7 +305,7 @@ export const api = {
   },
 
   async submitSettlement(payload: any): Promise<Settlement> {
-    const res = await fetch(API_BASE_URL + '//api/finance/settle', {
+    const res = await fetch(API_BASE_URL + '/api/finance/settle', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
@@ -316,7 +316,7 @@ export const api = {
   },
 
   async confirmSettlement(settlementId: string, actorId: string): Promise<Settlement> {
-    const res = await fetch(API_BASE_URL + '//api/finance/settle/confirm', {
+    const res = await fetch(API_BASE_URL + '/api/finance/settle/confirm', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ settlementId, actorId }),
@@ -331,13 +331,13 @@ export const api = {
 
   async getDynamicQRIS(receiverId: string, amount: number, purpose?: string): Promise<any> {
     const purposeParam = purpose ? `&purpose=${encodeURIComponent(purpose)}` : '';
-    const res = await fetch(API_BASE_URL + `//api/finance/qris-dynamic?receiverId=${receiverId}&amount=${amount}${purposeParam}`);
+    const res = await fetch(API_BASE_URL + `/api/finance/qris-dynamic?receiverId=${receiverId}&amount=${amount}${purposeParam}`);
     if (!res.ok) throw new Error('Gagal membuat QRIS dinamis');
     return res.json();
   },
 
   async createWalletTx(payload: any): Promise<WalletTransaction> {
-    const res = await fetch(API_BASE_URL + '//api/finance/wallet-tx', {
+    const res = await fetch(API_BASE_URL + '/api/finance/wallet-tx', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
@@ -348,7 +348,7 @@ export const api = {
   },
 
   async payContribution(payload: { contributionId: string; paidAmount: number; actorId: string }): Promise<any> {
-    const res = await fetch(API_BASE_URL + '//api/finance/contribution/pay', {
+    const res = await fetch(API_BASE_URL + '/api/finance/contribution/pay', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
@@ -358,13 +358,13 @@ export const api = {
   },
 
   async getCalendarEvents(houseId: string): Promise<CalendarEvent[]> {
-    const res = await fetch(API_BASE_URL + `//api/calendar?houseId=${houseId}`);
+    const res = await fetch(API_BASE_URL + `/api/calendar?houseId=${houseId}`);
     const data = await res.json();
     return data.events;
   },
 
   async createCalendarEvent(payload: { id: string, houseId: string, title: string, description?: string, date: string, type: string, color?: string, creatorId: string }): Promise<any> {
-    const res = await fetch(API_BASE_URL + '//api/calendar', {
+    const res = await fetch(API_BASE_URL + '/api/calendar', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
@@ -374,13 +374,13 @@ export const api = {
   },
 
   async getMaintenance(houseId: string): Promise<MaintenanceTicket[]> {
-    const res = await fetch(API_BASE_URL + `//api/maintenance?houseId=${houseId}`);
+    const res = await fetch(API_BASE_URL + `/api/maintenance?houseId=${houseId}`);
     const data = await res.json();
     return data.tickets;
   },
 
   async createMaintenance(payload: any): Promise<MaintenanceTicket> {
-    const res = await fetch(API_BASE_URL + '//api/maintenance', {
+    const res = await fetch(API_BASE_URL + '/api/maintenance', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
@@ -395,7 +395,7 @@ export const api = {
   },
 
   async updateMaintenanceStatus(ticketId: string, status: string): Promise<any> {
-    const res = await fetch(API_BASE_URL + '//api/maintenance/status', {
+    const res = await fetch(API_BASE_URL + '/api/maintenance/status', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ticketId, status }),
@@ -408,7 +408,7 @@ export const api = {
   },
 
   async reimburseMaintenance(payload: { ticketId: string; houseId: string; actorId: string; actualCost: number }): Promise<any> {
-    const res = await fetch(API_BASE_URL + '//api/maintenance/reimburse', {
+    const res = await fetch(API_BASE_URL + '/api/maintenance/reimburse', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
@@ -418,13 +418,13 @@ export const api = {
   },
 
   async getAvailability(houseId: string): Promise<any[]> {
-    const res = await fetch(API_BASE_URL + `//api/availability?houseId=${houseId}`);
+    const res = await fetch(API_BASE_URL + `/api/availability?houseId=${houseId}`);
     const data = await res.json();
     return data.periods;
   },
 
   async addAvailability(payload: any): Promise<any> {
-    const res = await fetch(API_BASE_URL + '//api/availability', {
+    const res = await fetch(API_BASE_URL + '/api/availability', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
@@ -433,25 +433,25 @@ export const api = {
   },
 
   async getActivities(houseId: string): Promise<Activity[]> {
-    const res = await fetch(API_BASE_URL + `//api/activities?houseId=${houseId}`);
+    const res = await fetch(API_BASE_URL + `/api/activities?houseId=${houseId}`);
     const data = await res.json();
     return data.activities;
   },
 
   async getRecap(houseId: string, period: string): Promise<any> {
-    const res = await fetch(API_BASE_URL + `//api/recaps?houseId=${houseId}&period=${period}`);
+    const res = await fetch(API_BASE_URL + `/api/recaps?houseId=${houseId}&period=${period}`);
     const data = await res.json();
     return data.recap;
   },
 
   async getNotifications(userId: string): Promise<HouseNotification[]> {
-    const res = await fetch(API_BASE_URL + `//api/notifications?userId=${userId}`);
+    const res = await fetch(API_BASE_URL + `/api/notifications?userId=${userId}`);
     const data = await res.json();
     return data.notifications;
   },
 
   async markNotificationRead(id?: string, userId?: string): Promise<void> {
-    await fetch(API_BASE_URL + '//api/notifications/read', {
+    await fetch(API_BASE_URL + '/api/notifications/read', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ notificationId: id, userId }),
@@ -459,13 +459,13 @@ export const api = {
   },
 
   async getTelegramSettings(houseId: string): Promise<TelegramSettings> {
-    const res = await fetch(API_BASE_URL + `//api/settings/telegram?houseId=${houseId}`);
+    const res = await fetch(API_BASE_URL + `/api/settings/telegram?houseId=${houseId}`);
     const data = await res.json();
     return data.settings;
   },
 
   async saveTelegramSettings(houseId: string, settings: Partial<TelegramSettings>): Promise<any> {
-    const res = await fetch(API_BASE_URL + '//api/settings/telegram', {
+    const res = await fetch(API_BASE_URL + '/api/settings/telegram', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ houseId, settings }),
@@ -478,7 +478,7 @@ export const api = {
   },
 
   async sendTestTelegram(message: string): Promise<any> {
-    const res = await fetch(API_BASE_URL + '//api/settings/telegram/test', {
+    const res = await fetch(API_BASE_URL + '/api/settings/telegram/test', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ message }),
@@ -487,7 +487,7 @@ export const api = {
   },
 
   async runDomainVerification(): Promise<any> {
-    const res = await fetch(API_BASE_URL + '//api/domain/verify-tests');
+    const res = await fetch(API_BASE_URL + '/api/domain/verify-tests');
     return res.json();
   },
 };

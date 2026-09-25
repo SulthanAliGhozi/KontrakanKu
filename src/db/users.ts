@@ -27,15 +27,13 @@ export async function getOrCreateUser(uid: string, email: string, name?: string,
         name: name || email.split('@')[0],
         avatarUrl: avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
       })
-      .onConflictDoUpdate({
-        target: users.uid,
-        set: {
+      .onDuplicateKeyUpdate({ set: {
           email: email.trim().toLowerCase(),
           ...(name ? { name } : {}),
           ...(avatarUrl ? { avatarUrl } : {}),
         },
       })
-      .returning();
+      ;
 
     return result[0];
   } catch (error) {
@@ -95,9 +93,7 @@ export async function registerDbUser(params: {
         avatarUrl: params.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150',
         qrisPayload: params.qrisPayload,
       })
-      .onConflictDoUpdate({
-        target: users.uid,
-        set: {
+      .onDuplicateKeyUpdate({ set: {
           email: cleanEmail,
           name: params.name,
           ...(passwordHash ? { passwordHash, passwordSalt } : {}),
@@ -106,7 +102,7 @@ export async function registerDbUser(params: {
           ...(params.qrisPayload ? { qrisPayload: params.qrisPayload } : {}),
         },
       })
-      .returning();
+      ;
 
     return result[0];
   } catch (error) {

@@ -156,6 +156,15 @@ export const FinanceHub: React.FC<FinanceHubProps> = ({
             <QrCode className="w-4 h-4 text-emerald-400" />
             <span>Generate QRIS</span>
           </button>
+          {currentUserId === 'user_ghozi' && (
+            <button
+              onClick={onOpenUserQRIS}
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-amber-500/50 bg-amber-950/60 hover:bg-amber-900/60 text-amber-300 text-xs font-bold transition shadow-sm"
+            >
+              <QrCode className="w-4 h-4 text-amber-400" />
+              <span>Edit QRIS Kas (Super Admin)</span>
+            </button>
+          )}
           <button
             onClick={() => setIsSplitBillModalOpen(true)}
             className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-bold transition shadow-sm"

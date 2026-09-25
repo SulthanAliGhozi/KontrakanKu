@@ -198,8 +198,13 @@ app.use(cors());
     }
   });
 
-  app.get('/api/users', (req, res) => {
-    res.json({ users: store.users });
+  app.get('/api/users', async (req, res) => {
+    try {
+      const dbUsersList = await dbGetAllUsers();
+      res.json({ users: dbUsersList.length > 0 ? dbUsersList : store.users });
+    } catch (e) {
+      res.json({ users: store.users });
+    }
   });
 
   // --- AUTH & ACCOUNT LOGIC (REAL PRODUCTION AUTH) ---

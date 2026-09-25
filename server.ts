@@ -39,7 +39,6 @@ import {
 export const app = express();
 app.use(cors());
 
-async function startServer() {
   // In production (Cloud Run), listen on the port specified by Cloud Run (process.env.PORT, typically 8080).
   // In development, the local dev container runs an nginx proxy on 8080 forwarding to 3000, so dev must bind to 3000.
   const PORT = process.env.NODE_ENV === 'production' && process.env.PORT
@@ -1088,22 +1087,22 @@ async function startServer() {
   });
 
   // --- VITE MIDDLEWARE ---
-  if (process.env.NODE_ENV !== 'production') {
-    const { createServer: createViteServer } = await import('vite');
-    const vite = await createViteServer({
+if (process.env.NODE_ENV !== 'production' && process.env.VERCEL !== '1') {
+  import('vite').then(async ({ createServer }) => {
+    const vite = await createServer({
       server: { middlewareMode: true },
       appType: 'spa',
     });
     app.use(vite.middlewares);
-  } else {
-    const distPath = path.join(process.cwd(), 'dist');
-    app.use(express.static(distPath));
-    app.get('*', (req, res) => {
-      res.sendFile(path.join(distPath, 'index.html'));
-    });
-  }
+  }).catch(console.error);
+} else if (process.env.VERCEL !== '1') {
+  const distPath = path.join(process.cwd(), 'dist');
+  app.use(express.static(distPath));
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(distPath, 'index.html'));
+  });
+}
 
-  const server = 
   app.put('/api/users/:userId/profile', async (req, res) => {
     try {
       const { userId } = req.params;
@@ -1151,12 +1150,16 @@ async function startServer() {
     }
   });
 
+
+if (process.env.VERCEL !== '1') {
+  const PORT = process.env.NODE_ENV === 'production' && process.env.PORT
+    ? parseInt(process.env.PORT, 10)
+    : 3000;
+  
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`Kontrakanku server running on http://0.0.0.0:${PORT} (NODE_ENV: ${process.env.NODE_ENV || 'development'})`);
   });
 
-  // In production, if Cloud Run sets PORT (e.g. 8080) and it differs from 3000,
-  // also attempt to bind port 3000 for any internal proxies or legacy checks.
   if (PORT !== 3000) {
     try {
       const secondary = app.listen(3000, '0.0.0.0', () => {
@@ -1165,18 +1168,11 @@ async function startServer() {
       secondary.on('error', (err: any) => {
         if (err.code === 'EADDRINUSE') {
           console.log(`Port 3000 in use, running on primary port ${PORT}`);
-        } else {
-          console.warn(`Secondary port 3000 error:`, err.message);
         }
       });
-    } catch (e: any) {
-      console.warn(`Could not start secondary listener on port 3000:`, e.message);
-    }
+    } catch (e: any) {}
   }
 }
 
-if (process.env.VERCEL !== '1') {
-  startServer();
-}
-
 export default app;
+

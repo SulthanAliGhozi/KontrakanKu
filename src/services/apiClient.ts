@@ -16,7 +16,7 @@ import {
   TelegramSettings,
   User,
   WalletTransaction,
-} from '../types';
+} from '../types.js';
 
 export interface CommandState {
   house: House;

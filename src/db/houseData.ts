@@ -1,4 +1,4 @@
-import { db } from './index.ts';
+import { db } from './index.js';
 import {
   activities,
   expenses,
@@ -11,10 +11,10 @@ import {
   users,
   walletTransactions,
   calendarEvents,
-} from './schema.ts';
+} from './schema.js';
 import { and, desc, eq, or } from 'drizzle-orm';
-import { INITIAL_HOUSES, INITIAL_MEMBERS } from '../server/db/initialData.ts';
-import { hashPassword, SUPER_ADMIN_EMAIL, SUPER_ADMIN_PASSWORD } from './users.ts';
+import { INITIAL_HOUSES, INITIAL_MEMBERS } from '../server/db/initialData.js';
+import { hashPassword, SUPER_ADMIN_EMAIL, SUPER_ADMIN_PASSWORD } from './users.js';
 
 export async function seedInitialCloudSqlData() {
   try {

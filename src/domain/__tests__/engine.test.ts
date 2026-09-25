@@ -1,10 +1,10 @@
-import { calculateNetBalances, generateSettlementPlan } from '../netBalance';
-import { calculateDutyBalances, selectNextDutyMember } from '../dutyEngine';
-import { calculateConsumptionMetrics } from '../consumptionEngine';
-import { validateQRISPayload, injectQRISAmount, calculateCRC16, createSampleQRISPayload } from '../qrisEngine';
-import { calculateSplitBill } from '../splitBillValidator';
-import { calculateWalletBalance } from '../walletEngine';
-import { AvailabilityPeriod, DutyLedgerEntry, Need, NeedCluster, NeedPurchase, SplitBill, WalletTransaction } from '../../types';
+import { calculateNetBalances, generateSettlementPlan } from '../netBalance.js';
+import { calculateDutyBalances, selectNextDutyMember } from '../dutyEngine.js';
+import { calculateConsumptionMetrics } from '../consumptionEngine.js';
+import { validateQRISPayload, injectQRISAmount, calculateCRC16, createSampleQRISPayload } from '../qrisEngine.js';
+import { calculateSplitBill } from '../splitBillValidator.js';
+import { calculateWalletBalance } from '../walletEngine.js';
+import { AvailabilityPeriod, DutyLedgerEntry, Need, NeedCluster, NeedPurchase, SplitBill, WalletTransaction } from '../../types.js';
 
 export function runDomainUnitTests(): { passed: boolean; results: { name: string; success: boolean; message?: string }[] } {
   const results: { name: string; success: boolean; message?: string }[] = [];

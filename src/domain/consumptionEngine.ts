@@ -1,4 +1,4 @@
-import { NeedPurchase } from '../types';
+import { NeedPurchase } from '../types.js';
 
 export interface ConsumptionMetrics {
   hasSufficientData: boolean;

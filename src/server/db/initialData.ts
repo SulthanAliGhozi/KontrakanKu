@@ -17,7 +17,7 @@ import {
   TelegramSettings,
   User,
   WalletTransaction,
-} from '../../types/index.ts';
+} from '../../types/index.js';
 
 // ONLY Super Admin is initialized; no mock/demo users
 export const INITIAL_USERS: User[] = [

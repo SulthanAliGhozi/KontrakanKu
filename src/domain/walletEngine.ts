@@ -1,4 +1,4 @@
-import { WalletTransaction } from '../types';
+import { WalletTransaction } from '../types.js';
 
 /**
  * calculateWalletBalance:

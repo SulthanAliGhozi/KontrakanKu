@@ -5,7 +5,6 @@ import path from 'path';
 import { createServer as createViteServer } from 'vite';
 import { store } from './src/server/store.js';
 import { syncDbToMemory } from './src/db/syncMemory.js';
-import { runDomainUnitTests } from './src/domain/__tests__/engine.test.js';
 import { calculateNetBalances, generateSettlementPlan } from './src/domain/netBalance.js';
 import { injectQRISAmount, createSampleQRISPayload, validateQRISPayload, convertStaticToDynamicQRIS } from './src/domain/qrisEngine.js';
 import { calculateConsumptionMetrics } from './src/domain/consumptionEngine.js';
@@ -126,8 +125,7 @@ app.use(cors());
   });
 
   app.get('/api/domain/verify-tests', (req, res) => {
-    const testResult = runDomainUnitTests();
-    res.json(testResult);
+    const testResult =     res.json(testResult);
   });
 
   // --- HOUSES & USERS ---

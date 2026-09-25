@@ -7,6 +7,7 @@ interface SidebarProps {
   pendingDutiesCount?: number;
   unsettledDebtsCount?: number;
   openMaintenanceCount?: number;
+  isAdmin?: boolean;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -15,8 +16,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
   pendingDutiesCount = 0,
   unsettledDebtsCount = 0,
   openMaintenanceCount = 0,
+  isAdmin = false,
 }) => {
-  const navItems = [
+  let navItems = [
+    { id: 'home', label: 'Home', icon: Home, badge: null },
+    { id: 'kebutuhan', label: 'Kebutuhan', icon: Package, badge: pendingDutiesCount > 0 ? pendingDutiesCount : null },
+    { id: 'kalender', label: 'Kalender', icon: Calendar, badge: null },
+    { id: 'keuangan', label: 'Keuangan', icon: Wallet, badge: unsettledDebtsCount > 0 ? unsettledDebtsCount : null },
+    { id: 'pemeliharaan', label: 'Pemeliharaan', icon: Wrench, badge: openMaintenanceCount > 0 ? openMaintenanceCount : null },
+    { id: 'aktivitas', label: 'Aktivitas & Rekap', icon: Activity, badge: null },
+    { id: 'profil', label: 'Profil Akun', icon: UserCircle, badge: null },
+  ];
+  if (isAdmin) {
+    navItems.push({ id: 'pengaturan', label: 'Pengaturan Rumah', icon: Settings, badge: null });
+  }
     { id: 'home', label: 'Home', icon: Home, badge: null },
     { id: 'kebutuhan', label: 'Kebutuhan', icon: Package, badge: pendingDutiesCount > 0 ? pendingDutiesCount : null },
     { id: 'kalender', label: 'Kalender', icon: Calendar, badge: null },

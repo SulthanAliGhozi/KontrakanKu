@@ -159,8 +159,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const res = await api.register(name || email.split('@')[0], email, phone, password);
       const cleanEmail = res.user?.email?.toLowerCase();
       const isGhozi = cleanEmail === 's.a.ghozi@gmail.com' || cleanEmail === 's.a.ghozi@gmail.com';
-      const assignedRole: UserRole = isGhozi ? 'SUPER_ADMIN' : 'MEMBER';
-      saveSessionState(res.user, { token: res.token, user: res.user }, assignedRole);
+      // Do NOT save session state so they are not automatically logged in.
+      // Force them to login.
       return { error: null };
     } catch (err: any) {
       return { error: err };

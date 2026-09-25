@@ -296,6 +296,7 @@ function AppContent() {
       <div className="mx-auto flex w-full max-w-7xl flex-1">
         {/* Desktop Sidebar */}
         <Sidebar
+          isAdmin={authIsAdmin}
           activeTab={activeTab}
           onTabChange={(tab) => setActiveTab(tab)}
           pendingDutiesCount={

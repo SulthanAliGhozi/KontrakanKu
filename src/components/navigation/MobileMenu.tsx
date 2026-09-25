@@ -12,14 +12,16 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
   onNavigate,
   openMaintenanceCount = 0,
 }) => {
-  const { logout, user } = useAuth();
+  const { logout, user, isAdmin } = useAuth();
   
-  const menuItems = [
+  let menuItems = [
     { id: 'pemeliharaan', label: 'Pemeliharaan', icon: Wrench, badge: openMaintenanceCount > 0 ? openMaintenanceCount : null },
     { id: 'aktivitas', label: 'Aktivitas & Rekap', icon: Activity, badge: null },
     { id: 'profil', label: 'Profil Akun', icon: UserCircle, badge: null },
-    { id: 'pengaturan', label: 'Pengaturan Rumah', icon: Settings, badge: null },
   ];
+  if (isAdmin) {
+    menuItems.push({ id: 'pengaturan', label: 'Pengaturan Rumah', icon: Settings, badge: null });
+  }
 
   return (
     <div className="space-y-6 pb-24 fade-in">

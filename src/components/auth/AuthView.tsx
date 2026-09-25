@@ -62,7 +62,10 @@ export const AuthView: React.FC = () => {
         if (error) {
           setErrorMsg(error.message || 'Pendaftaran gagal. Silakan coba lagi.');
         } else {
-          setSuccessMsg('Pendaftaran berhasil! Anda telah masuk.');
+          setSuccessMsg('Pendaftaran berhasil! Silakan masuk menggunakan akun Anda.');
+          setMode('LOGIN');
+          setPassword('');
+          setConfirmPassword('');
         }
       } else if (mode === 'RESET') {
         const { error, message } = await resetPassword(cleanEmail);

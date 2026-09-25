@@ -14,6 +14,16 @@ export const ProfileHub: React.FC<ProfileHubProps> = ({ users, currentUserId }) 
   const [profPass, setProfPass] = useState('');
   const [isSavingProf, setIsSavingProf] = useState(false);
 
+  React.useEffect(() => {
+    const user = users.find(u => u.id === currentUserId);
+    if (user) {
+      setProfName(user.name || '');
+      setProfUsername(user.username || '');
+      setProfPhone(user.phone || '');
+      setProfAvatar(user.avatarUrl || '');
+    }
+  }, [users, currentUserId]);
+
   const handleSaveProfile = async () => {
     setIsSavingProf(true);
     try {

@@ -219,18 +219,18 @@ app.use(cors());
       let isSuperAdmin = false;
       let isAdmin = false;
 
-      // 1. Super Admin Authentication (sa.ghozi@gmail.com / s.a.ghozi@gmail.com)
-      const isSuperAdminEmail = cleanEmail === 'sa.ghozi@gmail.com' || cleanEmail === 's.a.ghozi@gmail.com';
+      // 1. Super Admin Authentication (s.a.ghozi@gmail.com / s.a.ghozi@gmail.com)
+      const isSuperAdminEmail = cleanEmail === 's.a.ghozi@gmail.com' || cleanEmail === 's.a.ghozi@gmail.com';
       if (isSuperAdminEmail) {
         if (password !== SUPER_ADMIN_PASSWORD) {
           return res.status(401).json({ error: 'Kata sandi Super Admin tidak sesuai. Silakan periksa kembali kata sandi Anda.' });
         }
-        const dbGhozi = await findDbUserByEmail('sa.ghozi@gmail.com');
-        const memoryGhozi = store.findUserByEmail('sa.ghozi@gmail.com') || store.users.find(u => u.id === 'user_ghozi');
+        const dbGhozi = await findDbUserByEmail('s.a.ghozi@gmail.com');
+        const memoryGhozi = store.findUserByEmail('s.a.ghozi@gmail.com') || store.users.find(u => u.id === 'user_ghozi');
         authenticatedUser = {
           id: 'user_ghozi',
           name: 'Sulthan Ali Ghozi',
-          email: 'sa.ghozi@gmail.com',
+          email: 's.a.ghozi@gmail.com',
           avatarUrl: dbGhozi?.avatarUrl || memoryGhozi?.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
           phone: dbGhozi?.phone || memoryGhozi?.phone || '081234567890',
           qrisPayload: dbGhozi?.qrisPayload || memoryGhozi?.qrisPayload,
@@ -315,7 +315,7 @@ app.use(cors());
         return res.status(400).json({ error: 'Email ini sudah terdaftar. Silakan masuk menggunakan tab Masuk.' });
       }
 
-      const isSuperAdminEmail = cleanEmail === 'sa.ghozi@gmail.com' || cleanEmail === 's.a.ghozi@gmail.com';
+      const isSuperAdminEmail = cleanEmail === 's.a.ghozi@gmail.com' || cleanEmail === 's.a.ghozi@gmail.com';
       const cleanName = (name || '').trim() || cleanEmail.split('@')[0];
       const uid = isSuperAdminEmail ? 'user_ghozi' : `user_${Date.now()}`;
 

@@ -103,6 +103,21 @@ export async function registerDbUser(params: {
         },
       })
       ;
+      
+    // Auto-join house_harmoni
+    try {
+      const { houseMembers } = await import('./schema.js');
+      await db.insert(houseMembers)
+        .values({
+          houseId: 'house_harmoni',
+          userId: params.uid,
+          role: params.role || 'member',
+          status: 'active',
+        })
+        .onDuplicateKeyUpdate({ set: { role: params.role || 'member' } });
+    } catch (err) {
+      console.error('Failed to auto-join house:', err);
+    }
 
     return result[0];
   } catch (error) {

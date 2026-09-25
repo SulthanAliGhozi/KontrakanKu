@@ -19,7 +19,7 @@ import {
   User,
   UserRole,
   WalletTransaction,
-} from '../types';
+} from '../types.js';
 import {
   INITIAL_ACTIVITIES,
   INITIAL_AVAILABILITY,
@@ -39,13 +39,13 @@ import {
   INITIAL_USERS,
   INITIAL_WALLET,
   INITIAL_WALLET_TXS,
-} from './db/initialData';
-import { calculateConsumptionMetrics } from '../domain/consumptionEngine';
-import { selectNextDutyMember } from '../domain/dutyEngine';
-import { calculateNetBalances, generateSettlementPlan } from '../domain/netBalance';
-import { calculateSplitBill } from '../domain/splitBillValidator';
-import { calculateWalletBalance } from '../domain/walletEngine';
-import { createSampleQRISPayload } from '../domain/qrisEngine';
+} from './db/initialData.js';
+import { calculateConsumptionMetrics } from '../domain/consumptionEngine.js';
+import { selectNextDutyMember } from '../domain/dutyEngine.js';
+import { calculateNetBalances, generateSettlementPlan } from '../domain/netBalance.js';
+import { calculateSplitBill } from '../domain/splitBillValidator.js';
+import { calculateWalletBalance } from '../domain/walletEngine.js';
+import { createSampleQRISPayload } from '../domain/qrisEngine.js';
 import crypto from 'crypto';
 
 // Server Memory Database

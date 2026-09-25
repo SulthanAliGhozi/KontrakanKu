@@ -11,3 +11,4 @@ seedDummyData*.ts
 createAdmin.ts
 testDb.ts
 convert_schema.*
+.vercel

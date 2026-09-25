@@ -1,5 +1,5 @@
-import { db } from './index.ts';
-import { users } from './schema.ts';
+import { db } from './index.js';
+import { users } from './schema.js';
 import { eq, or } from 'drizzle-orm';
 import crypto from 'crypto';
 

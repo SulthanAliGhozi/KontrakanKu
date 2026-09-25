@@ -1,6 +1,6 @@
-import { db } from './index.ts';
-import { store } from '../server/store.ts';
-import { maintenanceTasks, activities, calendarEvents, needs, splitBills, users } from './schema.ts';
+import { db } from './index.js';
+import { store } from '../server/store.js';
+import { maintenanceTasks, activities, calendarEvents, needs, splitBills, users } from './schema.js';
 
 export async function syncDbToMemory() {
   try {

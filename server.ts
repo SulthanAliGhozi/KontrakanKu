@@ -3,15 +3,15 @@ import express from 'express';
 import cors from 'cors';
 import path from 'path';
 import { createServer as createViteServer } from 'vite';
-import { store } from './src/server/store';
-import { syncDbToMemory } from './src/db/syncMemory.ts';
-import { runDomainUnitTests } from './src/domain/__tests__/engine.test';
-import { calculateNetBalances, generateSettlementPlan } from './src/domain/netBalance';
-import { injectQRISAmount, createSampleQRISPayload, validateQRISPayload, convertStaticToDynamicQRIS } from './src/domain/qrisEngine';
-import { calculateConsumptionMetrics } from './src/domain/consumptionEngine';
+import { store } from './src/server/store.js';
+import { syncDbToMemory } from './src/db/syncMemory.js';
+import { runDomainUnitTests } from './src/domain/__tests__/engine.test.js';
+import { calculateNetBalances, generateSettlementPlan } from './src/domain/netBalance.js';
+import { injectQRISAmount, createSampleQRISPayload, validateQRISPayload, convertStaticToDynamicQRIS } from './src/domain/qrisEngine.js';
+import { calculateConsumptionMetrics } from './src/domain/consumptionEngine.js';
 import QRCode from 'qrcode';
-import { requireAuth, AuthRequest } from './src/middleware/auth.ts';
-import { getOrCreateUser, getUsers, findDbUserByEmail, registerDbUser, verifyPassword, SUPER_ADMIN_EMAIL, SUPER_ADMIN_PASSWORD } from './src/db/users.ts';
+import { requireAuth, AuthRequest } from './src/middleware/auth.js';
+import { getOrCreateUser, getUsers, findDbUserByEmail, registerDbUser, verifyPassword, SUPER_ADMIN_EMAIL, SUPER_ADMIN_PASSWORD } from './src/db/users.js';
 import {
   seedInitialCloudSqlData,
   getHouseWithDetails,
@@ -37,7 +37,7 @@ import {
   dbGetCustomCalendarEvents,
   dbCreateCalendarEvent,
   dbGetAllUsers,
-} from './src/db/houseData.ts';
+} from './src/db/houseData.js';
 
 async function startServer() {
   const app = express();

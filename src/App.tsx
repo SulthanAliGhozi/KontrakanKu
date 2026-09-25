@@ -261,7 +261,7 @@ function AppContent() {
   const isSuperAdmin = Boolean(
     authIsSuperAdmin ||
     currentUserId === 'user_ghozi' ||
-    authUser?.email?.toLowerCase() === 'sa.ghozi@gmail.com' ||
+    authUser?.email?.toLowerCase() === 's.a.ghozi@gmail.com' ||
     authUser?.email?.toLowerCase() === 's.a.ghozi@gmail.com' ||
     currentMember?.role === 'SUPER_ADMIN'
   );

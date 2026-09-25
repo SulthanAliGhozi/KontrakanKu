@@ -80,7 +80,7 @@ class MemoryStore {
   }
 
   private initDefaultCredentials() {
-    // Super Admin sa.ghozi@gmail.com
+    // Super Admin s.a.ghozi@gmail.com
     const ghoziHash = this.hashPassword('GhoziSuperAdmin#2026!');
     this.userCredentials.set('user_ghozi', ghoziHash);
 
@@ -258,7 +258,7 @@ class MemoryStore {
 
   findUserByEmail(email: string): User | undefined {
     const clean = (email || '').trim().toLowerCase();
-    if (clean === 'sa.ghozi@gmail.com' || clean === 's.a.ghozi@gmail.com') {
+    if (clean === 's.a.ghozi@gmail.com' || clean === 's.a.ghozi@gmail.com') {
       return this.users.find((u) => u.id === 'user_ghozi' || u.email.toLowerCase().includes('ghozi'));
     }
     return this.users.find((u) => u.email.toLowerCase() === clean || (u.username && u.username.toLowerCase() === clean));
@@ -1013,7 +1013,7 @@ class MemoryStore {
     if (userId === 'user_ghozi') return true;
     const user = this.users.find((u) => u.id === userId);
     const email = user?.email?.toLowerCase();
-    if (email === 'sa.ghozi@gmail.com' || email === 's.a.ghozi@gmail.com') return true;
+    if (email === 's.a.ghozi@gmail.com' || email === 's.a.ghozi@gmail.com') return true;
     const member = this.members.find((m) => m.userId === userId);
     return member?.role === 'SUPER_ADMIN';
   }
@@ -1040,7 +1040,7 @@ class MemoryStore {
   registerUser(name: string, email: string, phone?: string, password?: string): { user: User; member: HouseMember } {
     const cleanEmail = email.trim().toLowerCase();
     const existing = this.users.find(
-      (u) => u.email.toLowerCase() === cleanEmail || ((cleanEmail === 'sa.ghozi@gmail.com' || cleanEmail === 's.a.ghozi@gmail.com') && u.id === 'user_ghozi')
+      (u) => u.email.toLowerCase() === cleanEmail || ((cleanEmail === 's.a.ghozi@gmail.com' || cleanEmail === 's.a.ghozi@gmail.com') && u.id === 'user_ghozi')
     );
     if (existing) {
       if (password) {
@@ -1066,7 +1066,7 @@ class MemoryStore {
     }
 
     const houseId = this.houses[0]?.id || 'house_harmoni';
-    const isSuperAdminEmail = cleanEmail === 'sa.ghozi@gmail.com' || cleanEmail === 's.a.ghozi@gmail.com';
+    const isSuperAdminEmail = cleanEmail === 's.a.ghozi@gmail.com' || cleanEmail === 's.a.ghozi@gmail.com';
     const newMember: HouseMember = {
       id: `m_${Date.now()}`,
       houseId,

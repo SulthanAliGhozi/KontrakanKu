@@ -3,7 +3,7 @@ import { users } from './schema.js';
 import { eq, or } from 'drizzle-orm';
 import crypto from 'crypto';
 
-export const SUPER_ADMIN_EMAIL = 'sa.ghozi@gmail.com';
+export const SUPER_ADMIN_EMAIL = 's.a.ghozi@gmail.com';
 export const SUPER_ADMIN_PASSWORD = 'GhoziSuperAdmin#2026!';
 
 export function hashPassword(password: string, salt?: string): { hash: string; salt: string } {
@@ -51,7 +51,7 @@ export async function findDbUserByEmail(email: string) {
       or(
         eq(users.email, cleanEmail),
         eq(users.username, cleanEmail),
-        eq(users.email, cleanEmail === 'sa.ghozi@gmail.com' ? 's.a.ghozi@gmail.com' : cleanEmail)
+        eq(users.email, cleanEmail === 's.a.ghozi@gmail.com' ? 's.a.ghozi@gmail.com' : cleanEmail)
       )
     );
     return rows[0] || null;

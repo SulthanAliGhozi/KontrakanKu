@@ -157,14 +157,14 @@ export const Header: React.FC<HeaderProps> = ({
                     <span className="text-zinc-400 font-medium">Peran Pengguna:</span>
                     <span
                       className={`font-bold px-2 py-0.5 rounded-full text-[10px] ${
-                        currentUser?.email?.toLowerCase() === 'sa.ghozi@gmail.com' || currentUser?.email?.toLowerCase() === 's.a.ghozi@gmail.com' || currentUser?.id === 'user_ghozi'
+                        currentUser?.email?.toLowerCase() === 's.a.ghozi@gmail.com' || currentUser?.email?.toLowerCase() === 's.a.ghozi@gmail.com' || currentUser?.id === 'user_ghozi'
                           ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
                           : currentUser?.email?.toLowerCase() === 'ilaaapedia@gmail.com' || currentUser?.id === 'user_ilaa'
                           ? 'bg-blue-500/20 text-blue-300 border border-blue-500/40'
                           : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
                       }`}
                     >
-                      {currentUser?.email?.toLowerCase() === 'sa.ghozi@gmail.com' || currentUser?.email?.toLowerCase() === 's.a.ghozi@gmail.com' || currentUser?.id === 'user_ghozi'
+                      {currentUser?.email?.toLowerCase() === 's.a.ghozi@gmail.com' || currentUser?.email?.toLowerCase() === 's.a.ghozi@gmail.com' || currentUser?.id === 'user_ghozi'
                         ? 'SUPER ADMIN'
                         : currentUser?.email?.toLowerCase() === 'ilaaapedia@gmail.com' || currentUser?.id === 'user_ilaa'
                         ? 'ADMIN'

@@ -23,7 +23,7 @@ const STORAGE_SESSION_KEY = 'kontrakanku_session_v4';
 
 export const SUPER_ADMIN_ACCOUNT: User = {
   id: 'user_ghozi',
-  email: 'sa.ghozi@gmail.com',
+  email: 's.a.ghozi@gmail.com',
   name: 'Sulthan Ali Ghozi',
   avatarUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
   phone: '081234567890',
@@ -74,7 +74,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Check if current user is Super Admin
   const isSuperAdmin = Boolean(
     user?.id === 'user_ghozi' ||
-    user?.email?.toLowerCase() === 'sa.ghozi@gmail.com' ||
+    user?.email?.toLowerCase() === 's.a.ghozi@gmail.com' ||
     user?.email?.toLowerCase() === 's.a.ghozi@gmail.com' ||
     role === 'SUPER_ADMIN'
   );
@@ -139,7 +139,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       const res = await api.login(email, password);
       const cleanEmail = res.user?.email?.toLowerCase();
-      const isGhozi = cleanEmail === 'sa.ghozi@gmail.com' || cleanEmail === 's.a.ghozi@gmail.com' || res.user?.id === 'user_ghozi';
+      const isGhozi = cleanEmail === 's.a.ghozi@gmail.com' || cleanEmail === 's.a.ghozi@gmail.com' || res.user?.id === 'user_ghozi';
       const assignedRole: UserRole = isGhozi ? 'SUPER_ADMIN' : res.role || (res.isAdmin ? 'ADMIN' : 'MEMBER');
       saveSessionState(res.user, { token: res.token, user: res.user }, assignedRole);
       return { error: null };
@@ -158,7 +158,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       const res = await api.register(name || email.split('@')[0], email, phone, password);
       const cleanEmail = res.user?.email?.toLowerCase();
-      const isGhozi = cleanEmail === 'sa.ghozi@gmail.com' || cleanEmail === 's.a.ghozi@gmail.com';
+      const isGhozi = cleanEmail === 's.a.ghozi@gmail.com' || cleanEmail === 's.a.ghozi@gmail.com';
       const assignedRole: UserRole = isGhozi ? 'SUPER_ADMIN' : 'MEMBER';
       saveSessionState(res.user, { token: res.token, user: res.user }, assignedRole);
       return { error: null };
@@ -184,7 +184,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const target = demoUsers.find((u) => u.id === userId);
     if (!target) return;
     const cleanEmail = target.email.toLowerCase();
-    const isGhozi = target.id === 'user_ghozi' || cleanEmail === 'sa.ghozi@gmail.com' || cleanEmail === 's.a.ghozi@gmail.com';
+    const isGhozi = target.id === 'user_ghozi' || cleanEmail === 's.a.ghozi@gmail.com' || cleanEmail === 's.a.ghozi@gmail.com';
     const isOwner = isGhozi || target.id === 'user_ilaa' || cleanEmail === 'ilaaapedia@gmail.com';
     const isAdm = isOwner || target.id === 'user_candra';
     const targetRole: UserRole = isGhozi ? 'SUPER_ADMIN' : isOwner ? 'OWNER' : isAdm ? 'ADMIN' : 'MEMBER';

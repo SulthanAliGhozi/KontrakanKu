@@ -341,7 +341,7 @@ app.use(cors());
       }
 
       // 2. Insert into Memory Store
-      const { user, member } = store.registerUser(cleanName, cleanEmail, phone, password);
+      const { user, member } = store.registerUser(cleanName, cleanEmail, phone, password, (username || '').trim().toLowerCase() || null);
       const isSuperAdmin = store.checkIsSuperAdmin(user.id);
       const isAdmin = store.checkIsAdmin(user.id);
 

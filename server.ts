@@ -2,7 +2,6 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import path from 'path';
-import { createServer as createViteServer } from 'vite';
 import { store } from './src/server/store.js';
 import { syncDbToMemory } from './src/db/syncMemory.js';
 import { calculateNetBalances, generateSettlementPlan } from './src/domain/netBalance.js';
@@ -1090,6 +1089,7 @@ app.use(cors());
 
   // --- VITE MIDDLEWARE ---
   if (process.env.NODE_ENV !== 'production') {
+    const { createServer: createViteServer } = await import('vite');
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: 'spa',

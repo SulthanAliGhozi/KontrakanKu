@@ -1,3 +1,4 @@
+import { requireAuth, AuthRequest } from './src/middleware/auth.js';
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';

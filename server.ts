@@ -8,7 +8,6 @@ import { calculateNetBalances, generateSettlementPlan } from './src/domain/netBa
 import { injectQRISAmount, createSampleQRISPayload, validateQRISPayload, convertStaticToDynamicQRIS } from './src/domain/qrisEngine.js';
 import { calculateConsumptionMetrics } from './src/domain/consumptionEngine.js';
 import QRCode from 'qrcode';
-import { requireAuth, AuthRequest } from './src/middleware/auth.js';
 import { getOrCreateUser, getUsers, findDbUserByEmail, registerDbUser, verifyPassword, SUPER_ADMIN_EMAIL, SUPER_ADMIN_PASSWORD } from './src/db/users.js';
 import {
   seedInitialCloudSqlData,

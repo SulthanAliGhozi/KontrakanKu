@@ -15,7 +15,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onTabChange,
   pendingDutiesCount = 0,
   unsettledDebtsCount = 0,
-  openMaintenanceCount = 0,
+    openMaintenanceCount = 0,
   isAdmin = false,
 }) => {
   let navItems = [
@@ -27,18 +27,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { id: 'aktivitas', label: 'Aktivitas & Rekap', icon: Activity, badge: null },
     { id: 'profil', label: 'Profil Akun', icon: UserCircle, badge: null },
   ];
+  
   if (isAdmin) {
     navItems.push({ id: 'pengaturan', label: 'Pengaturan Rumah', icon: Settings, badge: null });
   }
-    { id: 'home', label: 'Home', icon: Home, badge: null },
-    { id: 'kebutuhan', label: 'Kebutuhan', icon: Package, badge: pendingDutiesCount > 0 ? pendingDutiesCount : null },
-    { id: 'kalender', label: 'Kalender', icon: Calendar, badge: null },
-    { id: 'keuangan', label: 'Keuangan', icon: Wallet, badge: unsettledDebtsCount > 0 ? unsettledDebtsCount : null },
-    { id: 'pemeliharaan', label: 'Pemeliharaan', icon: Wrench, badge: openMaintenanceCount > 0 ? openMaintenanceCount : null },
-    { id: 'aktivitas', label: 'Aktivitas & Rekap', icon: Activity, badge: null },
-    { id: 'profil', label: 'Profil Akun', icon: UserCircle, badge: null },
-    { id: 'pengaturan', label: 'Pengaturan Rumah', icon: Settings, badge: null },
-  ];
 
   return (
     <aside className="hidden lg:flex w-64 flex-col border-r border-zinc-800/80 bg-zinc-950/60 p-4 shrink-0 min-h-[calc(100vh-65px)]">

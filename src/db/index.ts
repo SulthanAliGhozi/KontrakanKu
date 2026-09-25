@@ -8,15 +8,17 @@ declare global {
 
 export const createPool = () => {
   if (!global._mysqlPool) {
-    global._mysqlPool = mysql.createPool({
-      host: process.env.SQL_HOST,
-      user: process.env.SQL_USER,
-      password: process.env.SQL_PASSWORD,
-      database: process.env.SQL_DB_NAME,
-      waitForConnections: true,
-      connectionLimit: 10,
-      queueLimit: 0
-    });
+    global._mysqlPool = process.env.DATABASE_URL 
+      ? mysql.createPool(process.env.DATABASE_URL)
+      : mysql.createPool({
+          host: process.env.SQL_HOST,
+          user: process.env.SQL_USER,
+          password: process.env.SQL_PASSWORD,
+          database: process.env.SQL_DB_NAME,
+          waitForConnections: true,
+          connectionLimit: 10,
+          queueLimit: 0
+        });
   }
   return global._mysqlPool;
 };

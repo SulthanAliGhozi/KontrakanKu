@@ -1,0 +1,6 @@
+{
+  "name": "KONTRAKAN MARKAS WARUNG",
+  "description": "Sistem Operasi Rumah KONTRAKAN MARKAS WARUNG di GBA 3 Blok A8 no.5, RT.2/RW.10, Cipagalo, Kec. Bojongsoang, Kab. Bandung dengan Fitur Login, Kas Rumah, Giliran Kebutuhan, Split Bill, dan Pemeliharaan.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

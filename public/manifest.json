@@ -1,0 +1,19 @@
+{
+  "id": "/",
+  "name": "Kontrakanku — Sistem Operasi Rumah Kontrakan",
+  "short_name": "Kontrakanku",
+  "description": "Sistem Manajemen Rumah Kontrakan & Shared Living. Command Center, Giliran Kebutuhan, Kas Rumah, Split Bill, QRIS, Kalender, dan Pemeliharaan.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "theme_color": "#18181b",
+  "background_color": "#09090b",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

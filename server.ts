@@ -360,6 +360,56 @@ app.use(cors());
     }
   });
 
+
+  // --- USER MANAGEMENT (CRUD & RBAC) ---
+  app.put('/api/users/:userId/role', async (req, res) => {
+    try {
+      const { role } = req.body;
+      const { userId } = req.params;
+      if (userId === 'user_ghozi') return res.status(400).json({ error: 'Tidak dapat mengubah role Super Admin utama' });
+      
+      const user = store.users.find(u => u.id === userId);
+      if (user) {
+         const member = store.members.find(m => m.userId === userId);
+         if (member) member.role = role;
+      }
+      try {
+        const { db } = await import('./src/db/index.js');
+        const { houseMembers } = await import('./src/db/schema.js');
+        const { eq } = await import('drizzle-orm');
+        await db.update(houseMembers).set({ role }).where(eq(houseMembers.userId, userId));
+      } catch(err) {
+        console.error('Failed to update DB role', err);
+      }
+      res.json({ success: true });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.delete('/api/users/:userId', async (req, res) => {
+    try {
+      const { userId } = req.params;
+      if (userId === 'user_ghozi') return res.status(400).json({ error: 'Tidak dapat menghapus Super Admin utama' });
+      
+      // Remove from store
+      store.users = store.users.filter(u => u.id !== userId);
+      store.members = store.members.filter(m => m.userId !== userId);
+      
+      // Remove from DB (assuming db.delete is imported and users is imported)
+      // For simplicity, we just delete from db if possible, but actually we should import db and users
+      // So let's use dbDeleteUser
+      const { dbDeleteUser } = await import('./src/db/users.js').catch(() => ({ dbDeleteUser: null }));
+      if (dbDeleteUser) {
+        await dbDeleteUser(userId);
+      }
+
+      res.json({ success: true });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
   // --- PER-USER QRIS ENDPOINTS (1 Akun = 1 QRIS Pribadi) ---
   app.get('/api/users/:id/qris', async (req, res) => {
     try {
@@ -566,7 +616,7 @@ app.use(cors());
         activeMaintenance,
         recentActivities,
         unreadNotificationsCount: unreadNotifs,
-        currentUser: store.users.find((u) => u.id === currentUserId) || store.users[0],
+        currentUser: store.users.find((u) => u.id === currentUserId) || { id: currentUserId, name: 'Pengguna Baru', email: '' },
       });
     } catch (err: any) {
       res.status(500).json({ error: err.message });

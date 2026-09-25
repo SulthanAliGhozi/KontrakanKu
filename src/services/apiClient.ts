@@ -53,6 +53,23 @@ export const api = {
     return res.json();
   },
 
+
+  async updateUserRole(userId: string, role: string): Promise<void> {
+    const res = await fetch(API_BASE_URL + `/api/users/${userId}/role`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ role }),
+    });
+    if (!res.ok) throw new Error('Gagal mengubah role pengguna');
+  },
+
+  async deleteUser(userId: string): Promise<void> {
+    const res = await fetch(API_BASE_URL + `/api/users/${userId}`, {
+      method: 'DELETE',
+    });
+    if (!res.ok) throw new Error('Gagal menghapus pengguna');
+  },
+
   async getUsers(): Promise<User[]> {
     const res = await fetch(API_BASE_URL + '/api/users');
     const data = await res.json();

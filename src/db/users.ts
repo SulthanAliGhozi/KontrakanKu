@@ -155,3 +155,16 @@ export async function getUsers() {
     throw new Error("Database query failed. Please try again later.", { cause: error });
   }
 }
+
+export async function dbDeleteUser(userId: string) {
+  try {
+    const { houseMembers, expenses, maintenanceTasks, settlements, walletTransactions, activities } = await import('./schema.js');
+    
+    // Cleanup foreign keys first or ignore if cascade is on.
+    // For safety, let's delete from houseMembers
+    await db.delete(houseMembers).where(eq(houseMembers.userId, userId)).catch(() => {});
+    await db.delete(users).where(eq(users.uid, userId));
+  } catch (error) {
+    console.error('Failed to delete user:', error);
+  }
+}

@@ -294,6 +294,44 @@ export const SettingsHub: React.FC<SettingsHubProps> = ({
                           year: 'numeric',
                         })}
                       </span>
+                      <div className="flex items-center gap-2 mt-2">
+                        {currentUserId === 'user_ghozi' && m.userId !== 'user_ghozi' && (
+                          <>
+                            <select 
+                              className="bg-zinc-800 border border-zinc-700 rounded-lg text-[10px] px-2 py-1 text-white focus:outline-none"
+                              value={m.role}
+                              onChange={async (e) => {
+                                const newRole = e.target.value;
+                                try {
+                                  await api.updateUserRole(m.userId, newRole);
+                                  window.location.reload();
+                                } catch (err: any) {
+                                  alert(err.message);
+                                }
+                              }}
+                            >
+                              <option value="MEMBER">Member</option>
+                              <option value="ADMIN">Admin</option>
+                              <option value="SUPER_ADMIN">Super Admin</option>
+                            </select>
+                            <button
+                              onClick={async () => {
+                                if (confirm('Apakah Anda yakin ingin menghapus akun ini permanen?')) {
+                                  try {
+                                    await api.deleteUser(m.userId);
+                                    window.location.reload();
+                                  } catch (err: any) {
+                                    alert(err.message);
+                                  }
+                                }
+                              }}
+                              className="px-2 py-1 bg-red-500/20 text-red-400 hover:bg-red-500/30 rounded-lg text-[10px] font-bold"
+                            >
+                              Hapus Akun
+                            </button>
+                          </>
+                        )}
+                      </div>
                     </div>
                   </div>
 

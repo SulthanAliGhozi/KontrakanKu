@@ -36,9 +36,10 @@ import {
   dbGetAllUsers,
 } from './src/db/houseData.js';
 
-async function startServer() {
-  const app = express();
+export const app = express();
 app.use(cors());
+
+async function startServer() {
   // In production (Cloud Run), listen on the port specified by Cloud Run (process.env.PORT, typically 8080).
   // In development, the local dev container runs an nginx proxy on 8080 forwarding to 3000, so dev must bind to 3000.
   const PORT = process.env.NODE_ENV === 'production' && process.env.PORT

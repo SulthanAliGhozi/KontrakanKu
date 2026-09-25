@@ -217,19 +217,7 @@ function AppContent() {
   };
 
   // Auth Loading State
-  if (authLoading) {
-    return (
-      <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center text-zinc-400 gap-3">
-        <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 animate-pulse">
-          <Home className="w-6 h-6" />
-        </div>
-        <div className="flex items-center gap-2 text-xs font-semibold text-zinc-300">
-          <Loader2 className="w-4 h-4 animate-spin text-emerald-400" />
-          <span>Memuat sesi KONTRAKAN MARKAS WARUNG...</span>
-        </div>
-      </div>
-    );
-  }
+
 
   // Not Logged In -> Show Real Auth View
   if (!session || !authUser) {

@@ -10,7 +10,7 @@ export interface AuthContextType {
   isSuperAdmin: boolean;
   loading: boolean;
   isConfigured: boolean;
-  signUp: (email: string, password: string, name: string, phone?: string) => Promise<{ error: any }>;
+  signUp: (email: string, password: string, name: string, phone?: string, username?: string) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ error: any; message?: string }>;
@@ -150,13 +150,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const signUp = async (email: string, password: string, name: string, phone?: string) => {
+  const signUp = async (email: string, password: string, name: string, phone?: string, username?: string) => {
     setLoading(true);
     try {
       if (!email || !password) {
         throw new Error('Email dan kata sandi wajib diisi');
       }
-      const res = await api.register(name || email.split('@')[0], email, phone, password);
+      const res = await api.register(name || email.split('@')[0], email, phone, password, username);
       const cleanEmail = res.user?.email?.toLowerCase();
       const isGhozi = cleanEmail === 's.a.ghozi@gmail.com' || cleanEmail === 's.a.ghozi@gmail.com';
       // Do NOT save session state so they are not automatically logged in.

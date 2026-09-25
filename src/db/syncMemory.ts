@@ -1,6 +1,6 @@
 import { db } from './index.js';
 import { store } from '../server/store.js';
-import { maintenanceTasks, activities, calendarEvents, needs, splitBills, users } from './schema.js';
+import { maintenanceTasks, activities, calendarEvents, needs, splitBills, users, houseMembers } from './schema.js';
 
 export async function syncDbToMemory() {
   try {
@@ -57,6 +57,16 @@ export async function syncDbToMemory() {
       assigneeId: n.assigneeId || undefined,
       estimatedCost: n.estimatedCost || undefined,
       clusterId: n.clusterId || undefined,
+    }));
+
+
+    const allMembers = await db.select().from(houseMembers);
+    store.members = allMembers.map(m => ({
+      id: m.id.toString(),
+      houseId: m.houseId,
+      userId: m.userId,
+      role: m.role as any,
+      joinedAt: m.joinedAt ? m.joinedAt.toISOString() : new Date().toISOString(),
     }));
 
     // For now, this is enough to show Maintenance, Activities, and Users

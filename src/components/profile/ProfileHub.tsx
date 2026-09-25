@@ -7,6 +7,7 @@ interface ProfileHubProps {
 }
 
 export const ProfileHub: React.FC<ProfileHubProps> = ({ users, currentUserId }) => {
+  const [profEmail, setProfEmail] = useState(users.find(u => u.id === currentUserId)?.email || '');
   const [profName, setProfName] = useState(users.find(u => u.id === currentUserId)?.name || '');
   const [profUsername, setProfUsername] = useState(users.find(u => u.id === currentUserId)?.username || '');
   const [profPhone, setProfPhone] = useState(users.find(u => u.id === currentUserId)?.phone || '');
@@ -17,6 +18,7 @@ export const ProfileHub: React.FC<ProfileHubProps> = ({ users, currentUserId }) 
   React.useEffect(() => {
     const user = users.find(u => u.id === currentUserId);
     if (user) {
+      setProfEmail(user.email || '');
       setProfName(user.name || '');
       setProfUsername(user.username || '');
       setProfPhone(user.phone || '');
@@ -27,7 +29,7 @@ export const ProfileHub: React.FC<ProfileHubProps> = ({ users, currentUserId }) 
   const handleSaveProfile = async () => {
     setIsSavingProf(true);
     try {
-      await fetch(`/api/users/${currentUserId}/profile`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: profName, username: profUsername, phone: profPhone, avatarUrl: profAvatar, password: profPass }) });
+      await fetch(`/api/users/${currentUserId}/profile`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: profEmail, name: profName, username: profUsername, phone: profPhone, avatarUrl: profAvatar, password: profPass }) });
       alert('Profil berhasil diperbarui!');
     } catch(e) { alert('Gagal memperbarui profil'); }
     setIsSavingProf(false);
@@ -55,6 +57,10 @@ export const ProfileHub: React.FC<ProfileHubProps> = ({ users, currentUserId }) 
           
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div className="space-y-4">
+               <div>
+                  <label className="block text-zinc-400 mb-1 text-xs font-semibold">Email</label>
+                  <input type="email" value={profEmail} onChange={e => setProfEmail(e.target.value)} className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2 text-white focus:border-emerald-500 focus:outline-none text-sm font-mono mb-4" />
+               </div>
                <div>
                   <label className="block text-zinc-400 mb-1 text-xs font-semibold">Nama Lengkap</label>
                   <input type="text" value={profName} onChange={e => setProfName(e.target.value)} className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2 text-white focus:border-emerald-500 focus:outline-none text-sm" />

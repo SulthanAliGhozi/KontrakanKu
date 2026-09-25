@@ -86,6 +86,7 @@ export async function registerDbUser(params: {
         uid: params.uid,
         email: cleanEmail,
         name: params.name,
+        username: params.username || null,
         passwordHash,
         passwordSalt,
         phone: params.phone || '',
@@ -96,6 +97,7 @@ export async function registerDbUser(params: {
       .onDuplicateKeyUpdate({ set: {
           email: cleanEmail,
           name: params.name,
+          ...(params.username ? { username: params.username } : {}),
           ...(passwordHash ? { passwordHash, passwordSalt } : {}),
           ...(params.phone ? { phone: params.phone } : {}),
           ...(params.role ? { role: params.role } : {}),

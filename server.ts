@@ -49,33 +49,44 @@ app.use(cors());
   app.use(express.json());
 
   // Initialize Cloud SQL data and synchronize active state
-  try {
-    seedInitialCloudSqlData();
-    syncDbToMemory();
-    Promise.all([
-      dbGetAllUsers(),
-      dbGetNeeds('house_harmoni'),
-      dbGetPurchases('house_harmoni'),
-      dbGetExpenses('house_harmoni'),
-      dbGetMaintenance('house_harmoni'),
-      dbGetSettlements('house_harmoni'),
-      dbGetWalletTxs('house_harmoni'),
-      dbGetActivities('house_harmoni'),
-    ]);
-    store.syncFromCloudSql({
-      users: dbUsers,
-      needs: dbNeeds,
-      purchases: dbPurchases,
-      expenses: dbExpenses,
-      maintenance: dbMaintenance,
-      settlements: dbSettlements,
-      walletTxs: dbWalletTxs,
-      activities: dbActivities,
-    });
-    console.log(`Cloud SQL fully synchronized: ${dbUsers.length} users, ${dbNeeds.length} needs, ${dbExpenses.length} split bills.`);
-  } catch (err) {
-    console.warn('Startup Cloud SQL sync notice (will retry on query):', err);
-  }
+  (async () => {
+    try {
+      seedInitialCloudSqlData();
+      await syncDbToMemory();
+      const [
+        dbUsers,
+        dbNeeds,
+        dbPurchases,
+        dbExpenses,
+        dbMaintenance,
+        dbSettlements,
+        dbWalletTxs,
+        dbActivities,
+      ] = await Promise.all([
+        dbGetAllUsers(),
+        dbGetNeeds('house_harmoni'),
+        dbGetPurchases('house_harmoni'),
+        dbGetExpenses('house_harmoni'),
+        dbGetMaintenance('house_harmoni'),
+        dbGetSettlements('house_harmoni'),
+        dbGetWalletTxs('house_harmoni'),
+        dbGetActivities('house_harmoni'),
+      ]);
+      store.syncFromCloudSql({
+        users: dbUsers,
+        needs: dbNeeds,
+        purchases: dbPurchases,
+        expenses: dbExpenses,
+        maintenance: dbMaintenance,
+        settlements: dbSettlements,
+        walletTxs: dbWalletTxs,
+        activities: dbActivities,
+      });
+      console.log(`Cloud SQL fully synchronized: ${dbUsers.length} users, ${dbNeeds.length} needs, ${dbExpenses.length} split bills.`);
+    } catch (err) {
+      console.warn('Startup Cloud SQL sync notice (will retry on query):', err);
+    }
+  })();
 
   // --- HEALTH & UNIT TESTS ---
   app.get('/api/health', (req, res) => {

@@ -157,11 +157,11 @@ export const api = {
     return res.json();
   },
 
-  async register(name: string, email: string, phone?: string, password?: string): Promise<any> {
+  async register(name: string, email: string, phone?: string, password?: string, username?: string): Promise<any> {
     const res = await fetch(API_BASE_URL + '/api/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, email, phone, password }),
+      body: JSON.stringify({ name, email, phone, password, username }),
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));

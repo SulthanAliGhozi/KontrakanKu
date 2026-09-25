@@ -58,7 +58,7 @@ export const AuthView: React.FC = () => {
           setIsSubmitting(false);
           return;
         }
-        const { error } = await signUp(cleanEmail, password, name.trim(), phone.trim());
+        const { error } = await signUp(cleanEmail, password, name.trim(), phone.trim(), username.trim());
         if (error) {
           setErrorMsg(error.message || 'Pendaftaran gagal. Silakan coba lagi.');
         } else {

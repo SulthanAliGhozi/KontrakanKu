@@ -5,6 +5,7 @@ import { AuthView } from './components/auth/AuthView';
 import { Header } from './components/navigation/Header';
 import { Sidebar } from './components/navigation/Sidebar';
 import { BottomNav } from './components/navigation/BottomNav';
+import { MobileMenu } from './components/navigation/MobileMenu';
 import { CommandCenter } from './components/home/CommandCenter';
 import { NeedsHub } from './components/needs/NeedsHub';
 import { NeedDetailModal } from './components/needs/NeedDetailModal';
@@ -381,6 +382,14 @@ function AppContent() {
 
           {activeTab === 'profil' && (
             <ProfileHub users={users} currentUserId={currentUserId} />
+          )}
+
+          
+          {activeTab === 'lainnya' && (
+            <MobileMenu
+              onNavigate={(tab) => setActiveTab(tab)}
+              openMaintenanceCount={state.activeMaintenance.filter(m => m.status !== 'RESOLVED').length}
+            />
           )}
 
           {activeTab === 'pengaturan' && (

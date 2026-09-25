@@ -1107,7 +1107,7 @@ if (process.env.NODE_ENV !== 'production' && process.env.VERCEL !== '1') {
   app.put('/api/users/:userId/profile', async (req, res) => {
     try {
       const { userId } = req.params;
-      const { name, username, phone } = req.body;
+      const { email, name, username, phone } = req.body;
       const cleanUsername = (username || '').trim().toLowerCase() || null;
       
       // Check if username is taken by someone else
@@ -1124,6 +1124,13 @@ if (process.env.NODE_ENV !== 'production' && process.env.VERCEL !== '1') {
         username: cleanUsername,
         phone,
       };
+      if (email) {
+        const existingEmail = await db.select().from(users).where(eq(users.email, email.trim().toLowerCase()));
+        if (existingEmail.length > 0 && existingEmail[0].uid !== userId) {
+          return res.status(400).json({ error: 'Email sudah digunakan orang lain' });
+        }
+        updateData.email = email.trim().toLowerCase();
+      }
       if (req.body.avatarUrl) {
          updateData.avatarUrl = req.body.avatarUrl;
       }
@@ -1143,6 +1150,7 @@ if (process.env.NODE_ENV !== 'production' && process.env.VERCEL !== '1') {
         memUser.name = name;
         memUser.username = cleanUsername || undefined;
         memUser.phone = phone;
+        if (email) memUser.email = email.trim().toLowerCase();
       }
       
       res.json({ success: true });

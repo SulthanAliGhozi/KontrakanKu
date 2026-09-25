@@ -11,6 +11,7 @@ interface EditProfileModalProps {
 }
 
 export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose, currentUser, onSuccess }) => {
+  const [email, setEmail] = useState(currentUser.email);
   const [name, setName] = useState(currentUser.name);
   const [username, setUsername] = useState(currentUser.username || '');
   const [phone, setPhone] = useState(currentUser.phone || '');
@@ -26,7 +27,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
       const res = await fetch(`/api/users/${currentUser.id}/profile`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, username, phone }),
+        body: JSON.stringify({ email, name, username, phone }),
       });
       
       const data = await res.json();
@@ -51,10 +52,10 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
         )}
 
         <div>
-          <label className="block text-zinc-400 mb-1 text-xs font-semibold">Alamat Email (Tidak bisa diubah)</label>
+          <label className="block text-zinc-300 mb-1 font-semibold">Alamat Email</label>
           <div className="relative">
-            <Mail className="absolute left-3 top-2.5 w-4 h-4 text-zinc-600" />
-            <input type="text" value={currentUser.email} disabled className="w-full bg-zinc-900 border border-zinc-800 rounded-xl pl-9 pr-3 py-2 text-zinc-500 cursor-not-allowed" />
+            <Mail className="absolute left-3 top-2.5 w-4 h-4 text-zinc-500" />
+            <input required type="email" value={email} onChange={e => setEmail(e.target.value.toLowerCase())} className="w-full bg-zinc-950 border border-zinc-800 rounded-xl pl-9 pr-3 py-2 text-white focus:border-emerald-500 focus:outline-none" />
           </div>
         </div>
 

@@ -49,9 +49,9 @@ app.use(cors());
 
   // Initialize Cloud SQL data and synchronize active state
   try {
-    await seedInitialCloudSqlData();
-    await syncDbToMemory();
-    const [dbUsers, dbNeeds, dbPurchases, dbExpenses, dbMaintenance, dbSettlements, dbWalletTxs, dbActivities] = await Promise.all([
+    seedInitialCloudSqlData();
+    syncDbToMemory();
+    Promise.all([
       dbGetAllUsers(),
       dbGetNeeds('house_harmoni'),
       dbGetPurchases('house_harmoni'),
@@ -101,7 +101,7 @@ app.use(cors());
 
   app.get('/api/db/users', async (req, res) => {
     try {
-      await seedInitialCloudSqlData();
+      seedInitialCloudSqlData();
       const dbUsers = await getUsers();
       res.json({ users: dbUsers });
     } catch (error: any) {
@@ -112,7 +112,7 @@ app.use(cors());
 
   app.get('/api/db/house', async (req, res) => {
     try {
-      await seedInitialCloudSqlData();
+      seedInitialCloudSqlData();
       const houseId = (req.query.houseId as string) || 'house_harmoni';
       const details = await getHouseWithDetails(houseId);
       res.json(details);

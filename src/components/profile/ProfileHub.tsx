@@ -29,7 +29,11 @@ export const ProfileHub: React.FC<ProfileHubProps> = ({ users, currentUserId }) 
   const handleSaveProfile = async () => {
     setIsSavingProf(true);
     try {
-      await fetch(`/api/users/${currentUserId}/profile`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: profEmail, name: profName, username: profUsername, phone: profPhone, avatarUrl: profAvatar, password: profPass }) });
+      const res = await fetch(`/api/users/${currentUserId}/profile`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: profEmail, name: profName, username: profUsername, phone: profPhone, avatarUrl: profAvatar, password: profPass }) });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || 'Gagal memperbarui profil');
+      }
       alert('Profil berhasil diperbarui!');
     } catch(e) { alert('Gagal memperbarui profil'); }
     setIsSavingProf(false);

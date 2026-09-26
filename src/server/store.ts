@@ -144,6 +144,8 @@ class MemoryStore {
         type: n.type,
         dutyEnabled: n.dutyEnabled,
         currentDutyMemberId: n.currentDutyMemberId,
+        rotationLogic: n.rotationLogic || 'individual',
+        rotationParticipants: n.rotationParticipants ? JSON.parse(n.rotationParticipants) : [],
         status: n.status,
         averageConsumptionDays: n.averageConsumptionDays,
         expectedNextPurchaseDate: n.expectedDepletedAt ? new Date(n.expectedDepletedAt).toISOString().split('T')[0] : undefined,

@@ -48,6 +48,8 @@ export const needs = mysqlTable('needs', {
   type: varchar('type', { length: 255 }).notNull(),
   dutyEnabled: boolean('duty_enabled').default(true),
   currentDutyMemberId: varchar('current_duty_member_id', { length: 255 }),
+  rotationLogic: varchar('rotation_logic', { length: 255 }).default('individual'),
+  rotationParticipants: text('rotation_participants'), // JSON array of uids
   status: varchar('status', { length: 255 }).default('AVAILABLE').notNull(),
   urgencyScore: int('urgency_score').default(0),
   averageConsumptionDays: int('average_consumption_days').default(14),

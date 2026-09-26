@@ -38,6 +38,17 @@ import {
 } from './src/db/houseData.js';
 
 export const app = express();
+
+  app.get('/api/migrate', async (req, res) => {
+    try {
+      await db.execute('ALTER TABLE needs ADD COLUMN rotation_logic VARCHAR(255) DEFAULT "individual";');
+      await db.execute('ALTER TABLE needs ADD COLUMN rotation_participants TEXT;');
+      res.json({ success: true, message: 'Migration applied!' });
+    } catch (e: any) {
+      res.json({ success: false, error: e.message });
+    }
+  });
+
 app.use(cors());
 
   // In production (Cloud Run), listen on the port specified by Cloud Run (process.env.PORT, typically 8080).

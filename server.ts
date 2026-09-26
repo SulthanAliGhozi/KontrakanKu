@@ -4,6 +4,7 @@ import express from 'express';
 import cors from 'cors';
 import path from 'path';
 import { store } from './src/server/store.js';
+import { db } from './src/db/index.js';
 import { syncDbToMemory } from './src/db/syncMemory.js';
 import { calculateNetBalances, generateSettlementPlan } from './src/domain/netBalance.js';
 import { injectQRISAmount, createSampleQRISPayload, validateQRISPayload, convertStaticToDynamicQRIS } from './src/domain/qrisEngine.js';

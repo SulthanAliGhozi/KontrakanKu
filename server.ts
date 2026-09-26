@@ -1021,7 +1021,45 @@ app.use(cors());
   // --- CALENDAR ---
   app.get('/api/calendar', async (req, res) => {
     const houseId = (req.query.houseId as string) || store.houses[0].id;
-    const autoEvents = store.calendarEvents.filter((e) => e.houseId === houseId);
+    // Dynamically reconstruct autoEvents from needs and purchases
+    const housePurchases = store.purchases.filter(p => p.houseId === houseId);
+    const houseNeeds = store.needs.filter(n => n.houseId === houseId);
+    
+    const autoEvents: any[] = [];
+    
+    housePurchases.forEach(p => {
+      const need = houseNeeds.find(n => n.id === p.needId);
+      if (need) {
+        autoEvents.push({
+          id: `cal_${p.id}`,
+          houseId: p.houseId,
+          title: `${need.name} (${store.users.find((u) => u.id === p.purchaserId)?.name || 'Member'})`,
+          date: p.date,
+          type: 'NEED_PURCHASE',
+          isEstimated: false,
+          color: need.color,
+          relatedId: need.id,
+          description: `Rp ${p.amount.toLocaleString('id-ID')}`
+        });
+      }
+    });
+    
+    houseNeeds.forEach(need => {
+      if (need.expectedNextPurchaseDate) {
+        autoEvents.push({
+          id: `cal_est_${need.id}`,
+          houseId: need.houseId,
+          title: `Estimasi: ${need.name}`,
+          date: need.expectedNextPurchaseDate,
+          type: 'NEED_ESTIMATED',
+          isEstimated: true,
+          color: need.color,
+          relatedId: need.id,
+          description: `Prediksi interval ${need.averageConsumptionDays} hari (Giliran: ${store.users.find((u) => u.id === need.currentDutyMemberId)?.name || 'Belum ditentukan'})`
+        });
+      }
+    });
+
     const dbEvents = await dbGetCustomCalendarEvents(houseId);
     const customEvents = dbEvents.map(e => ({
       id: e.id,

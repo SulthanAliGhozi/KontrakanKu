@@ -465,6 +465,7 @@ function AppContent() {
         <ConfigureNeedModal
           need={selectedNeedToConfigure}
           clusters={state.clusters}
+          members={state.members}
           onClose={() => setSelectedNeedToConfigure(null)}
           onSaved={() => loadHouseState()}
         />

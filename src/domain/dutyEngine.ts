@@ -120,9 +120,13 @@ export function selectNextDutyMember(
   ledgerEntries: DutyLedgerEntry[],
   targetDate: string = new Date().toISOString()
 ): string | null {
-  // Step 1: Filter by cluster
+  // Step 1: Filter by cluster and custom rotation groups
   let eligibleMemberIds = [...allHouseMemberIds];
-  if (need.clusterId) {
+  
+  // If rotation is limited to specific participants
+  if (need.rotationLogic && need.rotationLogic !== 'all' && need.rotationParticipants && need.rotationParticipants.length > 0) {
+    eligibleMemberIds = eligibleMemberIds.filter(id => need.rotationParticipants!.includes(id));
+  } else if (need.clusterId) { // Fallback to old cluster logic if no custom rotation
     const cluster = clusters.find((c) => c.id === need.clusterId);
     if (cluster && cluster.memberIds.length > 0) {
       eligibleMemberIds = eligibleMemberIds.filter((id) => cluster.memberIds.includes(id));

@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { Modal } from '../ui/Modal';
-import { NeedCluster } from '../../types';
+import { NeedCluster, HouseMember } from '../../types';
 import { ShieldCheck, ShieldAlert, Sparkles, Lock } from 'lucide-react';
 
 interface CreateNeedModalProps {
   isOpen: boolean;
   onClose: () => void;
   clusters: NeedCluster[];
+  members: HouseMember[];
   isAdmin?: boolean;
   onSubmit: (data: {
     name: string;
@@ -15,6 +16,8 @@ interface CreateNeedModalProps {
     color: string;
     type: string;
     dutyEnabled: boolean;
+    rotationLogic: string;
+    rotationParticipants: string[];
     clusterId?: string;
   }) => Promise<void>;
 }
@@ -23,6 +26,7 @@ export const CreateNeedModal: React.FC<CreateNeedModalProps> = ({
   isOpen,
   onClose,
   clusters,
+  members,
   isAdmin = true,
   onSubmit,
 }) => {
@@ -32,6 +36,8 @@ export const CreateNeedModal: React.FC<CreateNeedModalProps> = ({
   const [color, setColor] = useState('#10b981');
   const [type, setType] = useState('CONSUMABLE');
   const [dutyEnabled, setDutyEnabled] = useState(true);
+  const [rotationLogic, setRotationLogic] = useState('individual');
+  const [rotationParticipants, setRotationParticipants] = useState<string[]>([]);
   const [clusterId, setClusterId] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -54,6 +60,8 @@ export const CreateNeedModal: React.FC<CreateNeedModalProps> = ({
         color,
         type,
         dutyEnabled,
+        rotationLogic,
+        rotationParticipants,
         clusterId: clusterId || undefined,
       });
       setName('');
@@ -190,6 +198,51 @@ export const CreateNeedModal: React.FC<CreateNeedModalProps> = ({
           <p className="text-[11px] text-zinc-500 mt-1 pl-5">
             Sistem akan secara adil menggilirkan tugas pembelian kepada penghuni yang paling jarang membeli.
           </p>
+          
+          {dutyEnabled && (
+            <div className="mt-4 p-4 rounded-xl border border-zinc-700 bg-zinc-800/30 space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-zinc-300 mb-2">Metode Rotasi (Giliran)</label>
+                <select
+                  value={rotationLogic}
+                  onChange={(e) => setRotationLogic(e.target.value)}
+                  disabled={!isAdmin}
+                  className="w-full rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-2 text-zinc-100 focus:border-emerald-500 focus:outline-none disabled:opacity-50"
+                >
+                  <option value="individual">Perorangan (1 Orang Berurutan)</option>
+                  <option value="pair">Pasangan (2 Orang Sekaligus)</option>
+                  <option value="custom_group">Kelompok Tertentu Saja</option>
+                  <option value="all">Semua Penghuni Dibagi Rata</option>
+                </select>
+              </div>
+              
+              {rotationLogic !== 'all' && (
+                <div>
+                  <label className="block text-sm font-semibold text-zinc-300 mb-2">Pilih Penghuni yang Ikut Giliran</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {members.map(m => {
+                      const isSelected = rotationParticipants.includes(m.userId);
+                      return (
+                        <label key={m.userId} className="flex items-center gap-2 text-sm text-zinc-400">
+                          <input 
+                            type="checkbox"
+                            checked={isSelected}
+                            disabled={!isAdmin}
+                            onChange={(e) => {
+                              if (e.target.checked) setRotationParticipants([...rotationParticipants, m.userId]);
+                              else setRotationParticipants(rotationParticipants.filter(id => id !== m.userId));
+                            }}
+                            className="rounded border-zinc-600 bg-zinc-800 text-emerald-500 disabled:opacity-50"
+                          />
+                          {m.user?.name || m.userId}
+                        </label>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="pt-3 border-t border-zinc-800 flex justify-end gap-2">

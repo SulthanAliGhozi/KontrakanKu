@@ -12,12 +12,13 @@ import {
   Sliders,
   CheckCircle2,
 } from 'lucide-react';
-import { Need, NeedCategory, NeedCluster } from '../../types';
+import { Need, NeedCategory, NeedCluster, HouseMember } from '../../types';
 import { api } from '../../services/apiClient';
 
 interface ConfigureNeedModalProps {
   need: Need;
   clusters: NeedCluster[];
+  members: HouseMember[];
   onClose: () => void;
   onSaved: () => void;
 }
@@ -25,6 +26,7 @@ interface ConfigureNeedModalProps {
 export const ConfigureNeedModal: React.FC<ConfigureNeedModalProps> = ({
   need,
   clusters,
+  members,
   onClose,
   onSaved,
 }) => {
@@ -34,6 +36,8 @@ export const ConfigureNeedModal: React.FC<ConfigureNeedModalProps> = ({
   const [color, setColor] = useState(need.color || '#10b981');
   const [type, setType] = useState(need.type || 'CONSUMABLE');
   const [dutyEnabled, setDutyEnabled] = useState(need.dutyEnabled);
+  const [rotationLogic, setRotationLogic] = useState(need.rotationLogic || 'individual');
+  const [rotationParticipants, setRotationParticipants] = useState<string[]>(need.rotationParticipants || []);
   const [clusterId, setClusterId] = useState(need.clusterId || '');
   const [averageConsumptionDays, setAverageConsumptionDays] = useState(
     need.averageConsumptionDays || 7
@@ -60,6 +64,8 @@ export const ConfigureNeedModal: React.FC<ConfigureNeedModalProps> = ({
         color,
         type,
         dutyEnabled,
+        rotationLogic,
+        rotationParticipants,
         clusterId: clusterId || undefined,
         averageConsumptionDays: Number(averageConsumptionDays),
         expectedNextPurchaseDate: expectedNextPurchaseDate || undefined,
@@ -223,6 +229,49 @@ export const ConfigureNeedModal: React.FC<ConfigureNeedModalProps> = ({
                 className="w-4 h-4 rounded border-zinc-700 text-emerald-500 focus:ring-0"
               />
             </div>
+            
+            {dutyEnabled && (
+              <div className="mt-4 p-4 rounded-xl border border-zinc-700 bg-zinc-800/30 space-y-4">
+                <div>
+                  <label className="block text-sm font-semibold text-zinc-300 mb-2">Metode Rotasi (Giliran)</label>
+                  <select
+                    value={rotationLogic}
+                    onChange={(e) => setRotationLogic(e.target.value as any)}
+                    className="w-full rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-2 text-zinc-100 focus:border-emerald-500 focus:outline-none"
+                  >
+                    <option value="individual">Perorangan (1 Orang Berurutan)</option>
+                    <option value="pair">Pasangan (2 Orang Sekaligus)</option>
+                    <option value="custom_group">Kelompok Tertentu Saja</option>
+                    <option value="all">Semua Penghuni Dibagi Rata</option>
+                  </select>
+                </div>
+                
+                {rotationLogic !== 'all' && (
+                  <div>
+                    <label className="block text-sm font-semibold text-zinc-300 mb-2">Pilih Penghuni yang Ikut Giliran</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {members.map(m => {
+                        const isSelected = rotationParticipants.includes(m.userId);
+                        return (
+                          <label key={m.userId} className="flex items-center gap-2 text-sm text-zinc-400">
+                            <input 
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={(e) => {
+                                if (e.target.checked) setRotationParticipants([...rotationParticipants, m.userId]);
+                                else setRotationParticipants(rotationParticipants.filter(id => id !== m.userId));
+                              }}
+                              className="rounded border-zinc-600 bg-zinc-800 text-emerald-500"
+                            />
+                            {m.user?.name || m.userId}
+                          </label>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
 
             {clusters.length > 0 && (
               <div>

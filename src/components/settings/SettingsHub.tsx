@@ -344,6 +344,30 @@ export const SettingsHub: React.FC<SettingsHubProps> = ({
                         : 'Penghuni Tetap'}
                     </Badge>
                   </div>
+                  
+                  {currentUserId && members.find(mx => mx.userId === currentUserId)?.role === 'ADMIN' && (
+                    <button 
+                      onClick={async () => {
+                        const newPass = prompt(`Masukkan kata sandi baru untuk ${m.user?.name || m.user?.username}:`);
+                        if (!newPass) return;
+                        if (!confirm(`Yakin ingin mengubah sandi ${m.user?.name}?`)) return;
+                        try {
+                          const res = await fetch(`/api/users/${m.userId}/profile`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ password: newPass })
+                          });
+                          if (!res.ok) throw new Error('Gagal mereset sandi');
+                          alert('Sandi berhasil direset!');
+                        } catch (e: any) {
+                          alert(e.message || 'Gagal reset sandi');
+                        }
+                      }}
+                      className="mt-2 text-[10px] bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-2 py-1 rounded"
+                    >
+                      Reset Sandi
+                    </button>
+                  )}
                 </div>
               );
             })}

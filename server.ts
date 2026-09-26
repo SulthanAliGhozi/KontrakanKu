@@ -212,7 +212,20 @@ app.use(cors());
   app.get('/api/users', async (req, res) => {
     try {
       const dbUsersList = await dbGetAllUsers();
-      res.json({ users: dbUsersList.length > 0 ? dbUsersList : store.users });
+      if (dbUsersList.length > 0) {
+        const mappedUsers = dbUsersList.map(u => ({
+          id: u.uid, // Map DB uid to frontend id
+          email: u.email,
+          username: u.username || undefined,
+          name: u.name,
+          avatarUrl: u.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+          phone: u.phone || undefined,
+          qrisPayload: u.qrisPayload || undefined,
+          role: u.role,
+        }));
+        return res.json({ users: mappedUsers });
+      }
+      res.json({ users: store.users });
     } catch (e) {
       res.json({ users: store.users });
     }

@@ -80,26 +80,52 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     role === 'OWNER'
   );
 
-  // Sync users list from server
+  // Global listeners for immediate logout on 401 or cross-tab session purge
+  useEffect(() => {
+    const handleUnauthorized = () => {
+      saveSessionState(null, null);
+    };
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === STORAGE_SESSION_KEY && !e.newValue) {
+        setUser(null);
+        setSession(null);
+        setRole('MEMBER');
+      }
+    };
+    window.addEventListener('auth:unauthorized', handleUnauthorized);
+    window.addEventListener('storage', handleStorageChange);
+    return () => {
+      window.removeEventListener('auth:unauthorized', handleUnauthorized);
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
+
+  // Sync users list from server and verify current session validity
   useEffect(() => {
     const fetchUsers = async () => {
       try {
         const serverUsers = await api.getUsers();
-        if (serverUsers && serverUsers.length > 0) {
+        if (serverUsers && Array.isArray(serverUsers) && serverUsers.length > 0) {
           setDemoUsers(serverUsers);
           if (user) {
             const updatedCurrent = serverUsers.find((u) => u.id === user.id);
             if (updatedCurrent) {
               setUser((prev) => ({ ...prev, ...updatedCurrent }));
+            } else {
+              console.warn('Current user was removed by admin. Logging out.');
+              saveSessionState(null, null);
             }
           }
         }
-      } catch (err) {
+      } catch (err: any) {
+        if (err?.status === 401 || err?.userDeleted) {
+          saveSessionState(null, null);
+        }
         console.warn('Could not fetch server users:', err);
       }
     };
     fetchUsers();
-  }, []);
+  }, [user?.id]);
 
   const saveSessionState = (newUser: User | null, newSession: any | null, newRole: UserRole = 'MEMBER') => {
     setUser(newUser);
@@ -207,11 +233,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!user) return;
     try {
       const serverUsers = await api.getUsers();
-      const updated = serverUsers.find((u) => u.id === user.id);
-      if (updated) {
-        setUser((prev) => ({ ...prev, ...updated }));
+      if (serverUsers && Array.isArray(serverUsers) && serverUsers.length > 0) {
+        const updated = serverUsers.find((u) => u.id === user.id);
+        if (updated) {
+          setUser((prev) => ({ ...prev, ...updated }));
+        } else {
+          console.warn('User deleted during refreshUser. Logging out.');
+          saveSessionState(null, null);
+        }
       }
-    } catch (e) {
+    } catch (e: any) {
+      if (e?.status === 401 || e?.userDeleted) {
+        saveSessionState(null, null);
+      }
       console.warn('Failed to refresh user:', e);
     }
   };

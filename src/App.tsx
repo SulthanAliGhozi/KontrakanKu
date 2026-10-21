@@ -82,6 +82,17 @@ function AppContent() {
         api.getUsers().catch(() => []),
         api.getCalendarEvents(hid).catch(() => []),
       ]);
+      // Check if logged in user still exists in the user registry
+      if (authUser && allUsers && allUsers.length > 0) {
+        const userStillExists = allUsers.some((u: User) => u.id === authUser.id);
+        if (!userStillExists) {
+          alert('Akun Anda telah dinonaktifkan atau dihapus oleh Admin.');
+          await signOut();
+          navigate('/login');
+          return;
+        }
+      }
+
       setState(cmdState);
       setUsers(allUsers || []);
       setCalendarEvents(calEvents || []);
@@ -105,6 +116,12 @@ function AppContent() {
       setCalendarEvents(events || []);
       setFinanceData(fin);
     } catch (err: any) {
+      if (err?.userDeleted || err?.status === 401 || err?.message?.includes('dihapus') || err?.message?.includes('tidak ditemukan')) {
+        alert('Sesi Anda telah berakhir. Akun Anda tidak ditemukan atau telah dihapus oleh Admin.');
+        await signOut();
+        navigate('/login');
+        return;
+      }
       console.error('Failed to load state:', err);
       setError(err.message || 'Gagal memuat data rumah.');
     } finally {
@@ -123,6 +140,14 @@ function AppContent() {
         eventSource.onmessage = (e) => {
           try {
             const data = JSON.parse(e.data);
+            if (data.type === 'USER_DELETED') {
+              if (data.deletedUserId === authUser.id || data.deletedUserId === currentUserId) {
+                alert('Akun Anda telah dinonaktifkan atau dihapus oleh Admin.');
+                signOut();
+                navigate('/login');
+                return;
+              }
+            }
             if (data.type !== 'CONNECTED') {
               loadHouseState(currentUserId, currentHouseId);
             }

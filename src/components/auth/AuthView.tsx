@@ -343,25 +343,6 @@ export const AuthView: React.FC = () => {
           </button>
         </form>
 
-        {mode === 'LOGIN' && (
-          <div className="mt-4 p-3 rounded-2xl bg-zinc-950/70 border border-zinc-800 text-[11px] text-zinc-400 flex items-center justify-between">
-            <div>
-              <span className="font-bold text-zinc-300 block">Akun Bawaan Super Admin:</span>
-              <span className="font-mono text-zinc-400">admin • admin123</span>
-            </div>
-            <button
-              type="button"
-              onClick={() => {
-                setEmail('admin');
-                setPassword('admin123');
-              }}
-              className="px-2.5 py-1 rounded-lg bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25 border border-emerald-500/30 font-semibold cursor-pointer text-[10px] transition"
-            >
-              Isi Otomatis
-            </button>
-          </div>
-        )}
-
         {/* Footer Note */}
         <div className="mt-6 pt-4 border-t border-zinc-800/80 text-center">
           <p className="text-[11px] text-zinc-500">

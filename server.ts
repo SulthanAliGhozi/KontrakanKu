@@ -66,7 +66,7 @@ app.use(cors());
 
   app.use(express.json());
 
-app.use('/api', (req, res, next) => {
+app.use('/api', async (req, res, next) => {
   const openRoutes = [
     '/auth/login',
     '/auth/register',
@@ -80,12 +80,25 @@ app.use('/api', (req, res, next) => {
     '/current-state',
   ];
 
-  // If token is provided, always decode it and attach to req.user
+  // If token is provided, always decode it and verify account validity
   const authHeader = req.headers.authorization;
   if (authHeader && authHeader.startsWith('Bearer ')) {
     const token = authHeader.split(' ')[1];
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET || 'super_secret_dev_key') as any;
+      if (decoded && decoded.uid) {
+        // Verify user still exists in store or database
+        const existsInStore = store.users.some(u => u.id === decoded.uid);
+        if (!existsInStore) {
+          const dbUser = await dbGetUser(decoded.uid).catch(() => null);
+          if (!dbUser) {
+            return res.status(401).json({
+              error: 'Akun Anda tidak ditemukan atau telah dihapus oleh Admin.',
+              userDeleted: true
+            });
+          }
+        }
+      }
       (req as any).user = decoded;
     } catch (e) {
       // invalid token
@@ -820,15 +833,20 @@ app.post('/api/upload-avatar', upload.single('avatar'), async (req, res) => {
       store.users = store.users.filter(u => u.id !== userId);
       store.members = store.members.filter(m => m.userId !== userId);
       
-      // Remove from DB (assuming db.delete is imported and users is imported)
-      // For simplicity, we just delete from db if possible, but actually we should import db and users
-      // So let's use dbDeleteUser
+      // Remove from DB
       const { dbDeleteUser } = await import('./src/db/users.js').catch(() => ({ dbDeleteUser: null }));
       if (dbDeleteUser) {
         await dbDeleteUser(userId);
       }
 
-      res.json({ success: true });
+      // Broadcast real-time deletion event so the user's active session is terminated instantly
+      broadcastRealtimeEvent({
+        type: 'USER_DELETED',
+        deletedUserId: userId,
+        message: 'Akun Anda telah dinonaktifkan atau dihapus oleh Admin.'
+      });
+
+      res.json({ success: true, deletedUserId: userId });
     } catch (err: any) {
       res.status(500).json({ error: err.message });
     }
@@ -930,7 +948,7 @@ app.post('/api/upload-avatar', upload.single('avatar'), async (req, res) => {
   app.get('/api/current-state', async (req, res) => {
     try {
       const houseId = (req.query.houseId as string) || store.houses[0].id;
-      const currentUserId = (req.query.userId as string) || store.users[0].id;
+      const requestedUserId = req.query.userId as string;
 
       // Sync fresh user information & avatars from database
       const dbUsersList = await dbGetAllUsers().catch(() => []);
@@ -953,6 +971,20 @@ app.post('/api/upload-avatar', upload.single('avatar'), async (req, res) => {
           if (u.email) mem.email = u.email;
         }
       }
+
+      // Verify that if a specific user was requested, the account still exists
+      if (requestedUserId) {
+        const inStore = store.users.some(u => u.id === requestedUserId);
+        const inDb = userMap.has(requestedUserId);
+        if (!inStore && !inDb) {
+          return res.status(401).json({
+            error: 'Akun Anda tidak ditemukan atau telah dihapus oleh Admin.',
+            userDeleted: true
+          });
+        }
+      }
+
+      const currentUserId = requestedUserId || store.users[0]?.id || 'user_ghozi';
 
       const house = store.houses.find((h) => h.id === houseId) || store.houses[0];
       const { houseMembers } = await import('./src/db/schema.js');

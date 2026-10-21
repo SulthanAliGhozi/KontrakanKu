@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import { dbGetUser } from '../db/houseData.js';
 
 export interface AuthRequest extends Request {
   user?: {
@@ -20,6 +21,12 @@ export const requireAuth = async (req: AuthRequest, res: Response, next: NextFun
   const token = authHeader.split(' ')[1];
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'super_secret_dev_key') as any;
+    if (decoded && decoded.uid) {
+      const user = await dbGetUser(decoded.uid).catch(() => null);
+      if (!user) {
+        return res.status(401).json({ error: 'Akun Anda tidak ditemukan atau telah dihapus oleh Admin.', userDeleted: true });
+      }
+    }
     req.user = {
       uid: decoded.uid,
       email: decoded.email,

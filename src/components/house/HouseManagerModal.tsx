@@ -290,9 +290,10 @@ export const HouseManagerModal: React.FC<HouseManagerModalProps> = ({
   };
 
   const startEditMember = (m: HouseMember & { user?: User }) => {
+    const freshUser = allUsers.find((au) => au.id === m.userId) || m.user;
     setEditingMember(m);
-    setEditMemberName(m.user?.name || '');
-    setEditMemberPhone(m.user?.phone || '');
+    setEditMemberName(freshUser?.name || '');
+    setEditMemberPhone(freshUser?.phone || '');
     setEditMemberRole((m.role as UserRole) || 'MEMBER');
     setEditMemberPassword('');
     setErrorMsg(null);
@@ -371,11 +372,12 @@ export const HouseManagerModal: React.FC<HouseManagerModalProps> = ({
     const map = new Map<string, (HouseMember & { user?: User })>();
     for (const m of members) {
       if (!map.has(m.userId)) {
-        map.set(m.userId, m);
+        const freshUser = allUsers.find((au) => au.id === m.userId) || m.user;
+        map.set(m.userId, { ...m, user: freshUser });
       }
     }
     return Array.from(map.values());
-  }, [members]);
+  }, [members, allUsers]);
 
   const availableUsersToAdd = allUsers.filter(
     (u) => !uniqueMembers.some((m) => m.userId === u.id)

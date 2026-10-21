@@ -1,4 +1,4 @@
-import { sql } from 'drizzle-orm';
+import { sql, eq, and, or } from 'drizzle-orm';
 import { requireAuth, AuthRequest } from './src/middleware/auth.js';
 import 'dotenv/config';
 import jwt from 'jsonwebtoken';
@@ -113,6 +113,63 @@ const upload = multer({ storage: storage });
 
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
+// Realtime Server-Sent Events (SSE) Manager
+const sseClients = new Set<express.Response>();
+
+export function broadcastRealtimeEvent(event: { type: string; [key: string]: any } = { type: 'STATE_CHANGED' }) {
+  const data = JSON.stringify(event);
+  for (const client of sseClients) {
+    try {
+      client.write(`data: ${data}\n\n`);
+    } catch {
+      sseClients.delete(client);
+    }
+  }
+}
+
+// Periodic keepalive ping to prevent proxy/cellular drop
+setInterval(() => {
+  for (const client of sseClients) {
+    try {
+      client.write(': ping\n\n');
+    } catch {
+      sseClients.delete(client);
+    }
+  }
+}, 15000);
+
+app.get('/api/realtime/stream', (req, res) => {
+  res.writeHead(200, {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache, no-transform',
+    'Connection': 'keep-alive',
+    'Access-Control-Allow-Origin': '*',
+    'X-Accel-Buffering': 'no',
+  });
+  res.write('data: {"type":"CONNECTED"}\n\n');
+
+  sseClients.add(res);
+
+  req.on('close', () => {
+    sseClients.delete(res);
+  });
+});
+
+// Automatic mutation broadcaster: Any successful POST, PUT, DELETE under /api/ instantly triggers realtime sync across all users
+app.use((req, res, next) => {
+  if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(req.method) && req.path.startsWith('/api/') && !req.path.startsWith('/api/realtime')) {
+    const originalJson = res.json.bind(res);
+    res.json = (body: any) => {
+      const result = originalJson(body);
+      if (res.statusCode >= 200 && res.statusCode < 300) {
+        broadcastRealtimeEvent({ type: 'MUTATION_SUCCESS', method: req.method, path: req.path });
+      }
+      return result;
+    };
+  }
+  next();
+});
+
 app.post('/api/upload-avatar', upload.single('avatar'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
@@ -125,6 +182,11 @@ app.post('/api/upload-avatar', upload.single('avatar'), async (req, res) => {
     
     if (uid) {
       await db.update(users).set({ avatarUrl }).where(eq(users.uid, uid));
+      const memUser = store.users.find(u => u.id === uid);
+      if (memUser) {
+        memUser.avatarUrl = avatarUrl;
+      }
+      broadcastRealtimeEvent({ type: 'USER_UPDATED', userId: uid, avatarUrl });
     }
     
     res.json({ avatarUrl });
@@ -865,17 +927,56 @@ app.post('/api/upload-avatar', upload.single('avatar'), async (req, res) => {
   });
 
   // --- HOUSE COMMAND CENTER CURRENT STATE ---
-  app.get('/api/current-state', (req, res) => {
+  app.get('/api/current-state', async (req, res) => {
     try {
       const houseId = (req.query.houseId as string) || store.houses[0].id;
       const currentUserId = (req.query.userId as string) || store.users[0].id;
 
+      // Sync fresh user information & avatars from database
+      const dbUsersList = await dbGetAllUsers().catch(() => []);
+      const userMap = new Map<string, any>();
+      for (const u of dbUsersList) {
+        userMap.set(u.uid, {
+          id: u.uid,
+          name: u.name,
+          email: u.email,
+          username: u.username || undefined,
+          avatarUrl: u.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+          phone: u.phone || undefined,
+          qrisPayload: u.qrisPayload || undefined,
+          role: u.role,
+        });
+        const mem = store.users.find(mu => mu.id === u.uid);
+        if (mem) {
+          if (u.avatarUrl) mem.avatarUrl = u.avatarUrl;
+          if (u.name) mem.name = u.name;
+          if (u.email) mem.email = u.email;
+        }
+      }
+
       const house = store.houses.find((h) => h.id === houseId) || store.houses[0];
-      const rawMembers = store.members
-        .filter((m) => m.houseId === house.id)
+      const { houseMembers } = await import('./src/db/schema.js');
+      const dbMembersList = await db.select().from(houseMembers).where(eq(houseMembers.houseId, house.id)).catch(() => []);
+      
+      const combinedMembersMap = new Map<string, any>();
+      for (const m of store.members.filter(sm => sm.houseId === house.id)) {
+        combinedMembersMap.set(m.userId, m);
+      }
+      for (const m of dbMembersList) {
+        combinedMembersMap.set(m.userId, {
+          id: String(m.id),
+          houseId: m.houseId,
+          userId: m.userId,
+          role: m.role || 'member',
+          status: m.status || 'active',
+          joinedAt: m.joinedAt ? new Date(m.joinedAt).toISOString() : new Date().toISOString(),
+        });
+      }
+
+      const rawMembers = Array.from(combinedMembersMap.values())
         .map((m) => ({
           ...m,
-          user: store.users.find((u) => u.id === m.userId),
+          user: userMap.get(m.userId) || store.users.find((u) => u.id === m.userId),
         }));
       const seenUserIds = new Set<string>();
       const members = rawMembers.filter((m) => {
@@ -984,7 +1085,7 @@ app.post('/api/upload-avatar', upload.single('avatar'), async (req, res) => {
         activeMaintenance,
         recentActivities,
         unreadNotificationsCount: unreadNotifs,
-        currentUser: store.users.find((u) => u.id === currentUserId) || { id: currentUserId, name: 'Pengguna Baru', email: '' },
+        currentUser: userMap.get(currentUserId) || store.users.find((u) => u.id === currentUserId) || { id: currentUserId, name: 'Pengguna Baru', email: '' },
       });
     } catch (err: any) {
       res.status(500).json({ error: err.message });
@@ -1547,22 +1648,6 @@ app.post('/api/upload-avatar', upload.single('avatar'), async (req, res) => {
   });
 
   // --- VITE MIDDLEWARE ---
-if (process.env.NODE_ENV !== 'production' && process.env.VERCEL !== '1') {
-  import('vite').then(async ({ createServer }) => {
-    const vite = await createServer({
-      server: { middlewareMode: true },
-      appType: 'spa',
-    });
-    app.use(vite.middlewares);
-  }).catch(console.error);
-} else if (process.env.VERCEL !== '1') {
-  const distPath = path.join(process.cwd(), 'dist');
-  app.use(express.static(distPath));
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(distPath, 'index.html'));
-  });
-}
-
   app.put('/api/users/:userId/profile', async (req, res) => {
     try {
       const { userId } = req.params;
@@ -1625,6 +1710,22 @@ if (process.env.NODE_ENV !== 'production' && process.env.VERCEL !== '1') {
       res.status(500).json({ error: e.message });
     }
   });
+
+if (process.env.NODE_ENV !== 'production' && process.env.VERCEL !== '1') {
+  import('vite').then(async ({ createServer }) => {
+    const vite = await createServer({
+      server: { middlewareMode: true },
+      appType: 'spa',
+    });
+    app.use(vite.middlewares);
+  }).catch(console.error);
+} else if (process.env.VERCEL !== '1') {
+  const distPath = path.join(process.cwd(), 'dist');
+  app.use(express.static(distPath));
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(distPath, 'index.html'));
+  });
+}
 
 
 if (process.env.VERCEL !== '1') {

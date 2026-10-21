@@ -5,9 +5,10 @@ import { api } from '../../services/apiClient';
 interface ProfileHubProps {
   users: User[];
   currentUserId: string;
+  onRefresh?: () => void;
 }
 
-export const ProfileHub: React.FC<ProfileHubProps> = ({ users, currentUserId }) => {
+export const ProfileHub: React.FC<ProfileHubProps> = ({ users, currentUserId, onRefresh }) => {
   const [profEmail, setProfEmail] = useState(users.find(u => u.id === currentUserId)?.email || '');
   const [profName, setProfName] = useState(users.find(u => u.id === currentUserId)?.name || '');
   const [profUsername, setProfUsername] = useState(users.find(u => u.id === currentUserId)?.username || '');
@@ -39,6 +40,7 @@ export const ProfileHub: React.FC<ProfileHubProps> = ({ users, currentUserId }) 
         avatarUrl: profAvatar,
         password: profPass.trim().length >= 6 ? profPass.trim() : undefined,
       });
+      onRefresh?.();
       alert('Profil berhasil diperbarui!');
     } catch(e: any) {
       alert(e.message || 'Gagal memperbarui profil');

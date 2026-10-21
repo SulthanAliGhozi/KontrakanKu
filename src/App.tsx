@@ -115,15 +115,48 @@ function AppContent() {
   useEffect(() => {
     if (session && authUser) {
       loadHouseState(currentUserId, currentHouseId);
+
+      // 1. Realtime Server-Sent Events (SSE) Listener
+      let eventSource: EventSource | null = null;
+      try {
+        eventSource = new EventSource('/api/realtime/stream');
+        eventSource.onmessage = (e) => {
+          try {
+            const data = JSON.parse(e.data);
+            if (data.type !== 'CONNECTED') {
+              loadHouseState(currentUserId, currentHouseId);
+            }
+          } catch {
+            loadHouseState(currentUserId, currentHouseId);
+          }
+        };
+      } catch (err) {
+        console.warn('Realtime SSE unavailable, fallback to fast poll');
+      }
+
+      // 2. High-speed background sync (every 2.5s)
       const interval = setInterval(() => {
         loadHouseState(currentUserId, currentHouseId);
-      }, 5000);
+      }, 2500);
       
+      // 3. Instant sync when user switches tab or unlocks mobile screen
+      const handleFocus = () => {
+        loadHouseState(currentUserId, currentHouseId);
+      };
+      window.addEventListener('focus', handleFocus);
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+          handleFocus();
+        }
+      });
+
       const handleRefresh = () => loadHouseState(currentUserId, currentHouseId);
       window.addEventListener('refreshCalendar', handleRefresh);
       
       return () => {
+        if (eventSource) eventSource.close();
         clearInterval(interval);
+        window.removeEventListener('focus', handleFocus);
         window.removeEventListener('refreshCalendar', handleRefresh);
       };
     }
@@ -429,7 +462,7 @@ function AppContent() {
 
             <Route path="/profil" element={
               <ErrorBoundary fallbackMessage="Gagal memuat Profil.">
-                <ProfileHub users={users} currentUserId={currentUserId} />
+                <ProfileHub users={users} currentUserId={currentUserId} onRefresh={() => loadHouseState()} />
               </ErrorBoundary>
             } />
 

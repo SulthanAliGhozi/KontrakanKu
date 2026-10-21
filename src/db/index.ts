@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { drizzle } from 'drizzle-orm/mysql2';
 import mysql from 'mysql2/promise';
 import * as schema from './schema.js';
@@ -11,10 +12,10 @@ export const createPool = () => {
     global._mysqlPool = process.env.DATABASE_URL 
       ? mysql.createPool(process.env.DATABASE_URL)
       : mysql.createPool({
-          host: process.env.SQL_HOST,
-          user: process.env.SQL_USER,
-          password: process.env.SQL_PASSWORD,
-          database: process.env.SQL_DB_NAME,
+          host: process.env.SQL_HOST || 'localhost',
+          user: process.env.SQL_USER || 'root',
+          password: process.env.SQL_PASSWORD || '',
+          database: process.env.SQL_DB_NAME || 'kontrakanku',
           waitForConnections: true,
           connectionLimit: 10,
           queueLimit: 0

@@ -1,4 +1,4 @@
-import { NetBalancePosition, SettlementPlanItem, SplitBill, Settlement } from '../types.js';
+import { NetBalancePosition, SettlementPlanItem, SplitBill, Settlement } from '../types/index.ts';
 
 /**
  * calculateNetBalances:

@@ -6,9 +6,9 @@ coverage/
 *.log
 .env*
 !.env.example
-patch_*.ts
-seedDummyData*.ts
-createAdmin.ts
-testDb.ts
-convert_schema.*
+uploads/*
+!uploads/.gitkeep
 .vercel
+desktop-test.png
+image.png
+test-screenshots/

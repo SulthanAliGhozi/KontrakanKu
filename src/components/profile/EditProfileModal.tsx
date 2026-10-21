@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Modal } from '../ui/Modal';
 import { User } from '../../types';
+import { api } from '../../services/apiClient';
 import { User as UserIcon, Phone, Save, Mail } from 'lucide-react';
 
 interface EditProfileModalProps {
@@ -24,19 +25,11 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
     setError(null);
 
     try {
-      const res = await fetch(`/api/users/${currentUser.id}/profile`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, name, username, phone }),
-      });
-      
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Gagal menyimpan profil');
-      
+      await api.updateUserProfile(currentUser.id, { email, name, username, phone });
       onSuccess();
       onClose();
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message || 'Gagal menyimpan profil');
     } finally {
       setIsSubmitting(false);
     }

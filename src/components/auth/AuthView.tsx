@@ -1,10 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { LogIn, UserPlus, KeyRound, Mail, Lock, User, CheckCircle2, MapPin, Phone, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
 export const AuthView: React.FC = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const { signIn, signUp, resetPassword } = useAuth();
   const [mode, setMode] = useState<'LOGIN' | 'REGISTER' | 'RESET'>('LOGIN');
+  
+  useEffect(() => {
+    if (location.pathname === '/register') setMode('REGISTER');
+    else if (location.pathname === '/reset-password') setMode('RESET');
+    else setMode('LOGIN');
+  }, [location.pathname]);
+
+  const changeMode = (newMode: 'LOGIN' | 'REGISTER' | 'RESET') => {
+    if (newMode === 'REGISTER') navigate('/register');
+    else if (newMode === 'RESET') navigate('/reset-password');
+    else navigate('/login');
+  };
 
   // Form states (empty by default for real production authentication)
   const [email, setEmail] = useState('');
@@ -13,6 +28,7 @@ export const AuthView: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [name, setName] = useState('');
   const [username, setUsername] = useState('');
+  const [inviteCode, setInviteCode] = useState('');
   const [phone, setPhone] = useState('');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
@@ -58,12 +74,12 @@ export const AuthView: React.FC = () => {
           setIsSubmitting(false);
           return;
         }
-        const { error } = await signUp(cleanEmail, password, name.trim(), phone.trim(), username.trim());
+        const { error } = await signUp(cleanEmail, password, name.trim(), phone.trim(), username.trim(), inviteCode.trim());
         if (error) {
           setErrorMsg(error.message || 'Pendaftaran gagal. Silakan coba lagi.');
         } else {
           setSuccessMsg('Pendaftaran berhasil! Silakan masuk menggunakan akun Anda.');
-          setMode('LOGIN');
+          changeMode('LOGIN');
           setPassword('');
           setConfirmPassword('');
         }
@@ -108,7 +124,7 @@ export const AuthView: React.FC = () => {
           <button
             type="button"
             onClick={() => {
-              setMode('LOGIN');
+              changeMode('LOGIN');
               setErrorMsg(null);
               setSuccessMsg(null);
             }}
@@ -121,7 +137,7 @@ export const AuthView: React.FC = () => {
           <button
             type="button"
             onClick={() => {
-              setMode('REGISTER');
+              changeMode('REGISTER');
               setErrorMsg(null);
               setSuccessMsg(null);
             }}
@@ -134,7 +150,7 @@ export const AuthView: React.FC = () => {
           <button
             type="button"
             onClick={() => {
-              setMode('RESET');
+              changeMode('RESET');
               setErrorMsg(null);
               setSuccessMsg(null);
             }}
@@ -178,6 +194,24 @@ export const AuthView: React.FC = () => {
                   />
                 </div>
               </div>
+              
+              <div>
+                <label className="mb-1 block text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
+                  Kode Undangan (Opsional)
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                    <UserPlus className="h-4 w-4 text-zinc-500" />
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Contoh: KOSAN123"
+                    value={inviteCode}
+                    onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
+                    className="w-full rounded-xl border border-zinc-800 bg-zinc-950 pl-9 pr-3 py-2.5 text-white placeholder-zinc-500 focus:border-emerald-500 focus:outline-none font-mono"
+                  />
+                </div>
+              </div>
 
               <div>
                 <label className="block font-semibold text-zinc-300 mb-1">Username (Opsional)</label>
@@ -185,7 +219,7 @@ export const AuthView: React.FC = () => {
                   <User className="w-4 h-4 text-zinc-500 absolute left-3 top-2.5" />
                   <input
                     type="text"
-                    placeholder="sulthan_ali"
+                    placeholder="budi_santoso"
                     value={username}
                     onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
                     className="w-full rounded-xl border border-zinc-800 bg-zinc-950 pl-9 pr-3 py-2.5 text-white placeholder-zinc-500 focus:border-emerald-500 focus:outline-none font-mono"
@@ -234,7 +268,7 @@ export const AuthView: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => {
-                      setMode('RESET');
+                      changeMode('RESET');
                       setErrorMsg(null);
                       setSuccessMsg(null);
                     }}
@@ -308,6 +342,25 @@ export const AuthView: React.FC = () => {
             )}
           </button>
         </form>
+
+        {mode === 'LOGIN' && (
+          <div className="mt-4 p-3 rounded-2xl bg-zinc-950/70 border border-zinc-800 text-[11px] text-zinc-400 flex items-center justify-between">
+            <div>
+              <span className="font-bold text-zinc-300 block">Akun Bawaan Super Admin:</span>
+              <span className="font-mono text-zinc-400">admin • admin123</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setEmail('admin');
+                setPassword('admin123');
+              }}
+              className="px-2.5 py-1 rounded-lg bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25 border border-emerald-500/30 font-semibold cursor-pointer text-[10px] transition"
+            >
+              Isi Otomatis
+            </button>
+          </div>
+        )}
 
         {/* Footer Note */}
         <div className="mt-6 pt-4 border-t border-zinc-800/80 text-center">

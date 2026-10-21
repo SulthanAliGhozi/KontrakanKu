@@ -1,3 +1,5 @@
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
+import { BarChart3 } from 'lucide-react';
 import React, { useState } from 'react';
 import {
   Wallet,
@@ -30,6 +32,7 @@ import { CreateSplitBillModal } from './CreateSplitBillModal';
 import { Modal } from '../ui/Modal';
 
 interface FinanceHubProps {
+  onOpenUserQRIS?: () => void;
   wallet: HouseWallet;
   transactions: WalletTransaction[];
   contributions: MonthlyContribution[];
@@ -53,6 +56,7 @@ interface FinanceHubProps {
 }
 
 export const FinanceHub: React.FC<FinanceHubProps> = ({
+  onOpenUserQRIS,
   wallet,
   transactions,
   contributions,
@@ -70,7 +74,7 @@ export const FinanceHub: React.FC<FinanceHubProps> = ({
   onRefresh,
 }) => {
   const [activeTab, setActiveTab] = useState<
-    'SETTLE_UP' | 'WALLET' | 'SPLIT_BILLS' | 'CONTRIBUTIONS' | 'QRIS'
+    'SETTLE_UP' | 'WALLET' | 'SPLIT_BILLS' | 'CONTRIBUTIONS' | 'QRIS' | 'REPORTS'
   >('SETTLE_UP');
 
   // QRIS Modal State
@@ -190,6 +194,7 @@ export const FinanceHub: React.FC<FinanceHubProps> = ({
           { id: 'SPLIT_BILLS', label: 'Daftar Split Bill', icon: Receipt },
           { id: 'CONTRIBUTIONS', label: 'Iuran Bulanan', icon: Wallet },
           { id: 'QRIS', label: 'Generate QRIS', icon: QrCode },
+          { id: 'REPORTS', label: 'Laporan & Statistik', icon: BarChart3 },
         ].map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -677,6 +682,117 @@ export const FinanceHub: React.FC<FinanceHubProps> = ({
             onRefresh();
           }}
         />
+      )}
+
+      {/* TAB 6: REPORTS & STATS */}
+      {activeTab === 'REPORTS' && (
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="p-4 rounded-2xl border border-zinc-800 bg-zinc-900/80">
+              <span className="text-xs text-zinc-400 block">Total Pengeluaran Kas</span>
+              <span className="text-2xl font-extrabold text-rose-400 font-mono mt-1 block">
+                Rp {transactions.filter(t => t.type === 'EXPENSE').reduce((sum, t) => sum + t.amount, 0).toLocaleString('id-ID')}
+              </span>
+              <span className="text-[11px] text-zinc-500 mt-1 block">
+                {transactions.filter(t => t.type === 'EXPENSE').length} transaksi keluar
+              </span>
+            </div>
+
+            <div className="p-4 rounded-2xl border border-zinc-800 bg-zinc-900/80">
+              <span className="text-xs text-zinc-400 block">Total Pemasukan Kas</span>
+              <span className="text-2xl font-extrabold text-emerald-400 font-mono mt-1 block">
+                Rp {transactions.filter(t => t.type === 'INCOME').reduce((sum, t) => sum + t.amount, 0).toLocaleString('id-ID')}
+              </span>
+              <span className="text-[11px] text-zinc-500 mt-1 block">
+                {transactions.filter(t => t.type === 'INCOME').length} transaksi masuk
+              </span>
+            </div>
+
+            <div className="p-4 rounded-2xl border border-zinc-800 bg-zinc-900/80">
+              <span className="text-xs text-zinc-400 block">Arus Kas Bersih</span>
+              {(() => {
+                const inc = transactions.filter(t => t.type === 'INCOME').reduce((sum, t) => sum + t.amount, 0);
+                const exp = transactions.filter(t => t.type === 'EXPENSE').reduce((sum, t) => sum + t.amount, 0);
+                const net = inc - exp;
+                return (
+                  <>
+                    <span className={`text-2xl font-extrabold font-mono mt-1 block ${net >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                      {net >= 0 ? '+' : ''}Rp {net.toLocaleString('id-ID')}
+                    </span>
+                    <span className="text-[11px] text-zinc-500 mt-1 block">Saldo berjalan: Rp {wallet.balance.toLocaleString('id-ID')}</span>
+                  </>
+                );
+              })()}
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-zinc-800 bg-zinc-900/70 p-5 shadow-sm">
+            <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-4 border-b border-zinc-800 pb-3 flex items-center gap-2">
+              <BarChart3 className="w-4 h-4 text-emerald-400" />
+              <span>Komposisi Pengeluaran Kas Rumah</span>
+            </h3>
+
+            {transactions.filter(t => t.type === 'EXPENSE').length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 text-zinc-500 text-xs">
+                <Receipt className="w-8 h-8 mb-2 opacity-50" />
+                <p>Belum ada data pengeluaran kas yang tercatat.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                <div className="h-64 w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={[
+                          { name: 'Pemeliharaan', value: transactions.filter(t => t.type === 'EXPENSE' && t.category === 'MAINTENANCE').reduce((sum, t) => sum + t.amount, 0) },
+                          { name: 'Kebutuhan Rumah', value: transactions.filter(t => t.type === 'EXPENSE' && t.category === 'HOUSEHOLD').reduce((sum, t) => sum + t.amount, 0) },
+                          { name: 'Dana Darurat', value: transactions.filter(t => t.type === 'EXPENSE' && t.category === 'EMERGENCY').reduce((sum, t) => sum + t.amount, 0) },
+                          { name: 'Lainnya', value: transactions.filter(t => t.type === 'EXPENSE' && !['MAINTENANCE', 'HOUSEHOLD', 'EMERGENCY'].includes(t.category)).reduce((sum, t) => sum + t.amount, 0) }
+                        ].filter(d => d.value > 0)}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={55}
+                        outerRadius={75}
+                        paddingAngle={4}
+                        dataKey="value"
+                      >
+                        <Cell fill="#f43f5e" />
+                        <Cell fill="#10b981" />
+                        <Cell fill="#f59e0b" />
+                        <Cell fill="#3b82f6" />
+                      </Pie>
+                      <Tooltip 
+                        formatter={(value: any) => ['Rp ' + Number(value).toLocaleString('id-ID'), 'Total']}
+                        contentStyle={{ backgroundColor: '#18181b', borderColor: '#27272a', borderRadius: '12px', color: '#fff', fontSize: '12px' }}
+                      />
+                      <Legend wrapperStyle={{ fontSize: '11px', color: '#a1a1aa' }} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+
+                <div className="space-y-3">
+                  <span className="text-xs font-bold text-zinc-300 block">Rincian per Kategori:</span>
+                  {[
+                    { cat: 'Pemeliharaan', color: 'bg-rose-500', total: transactions.filter(t => t.type === 'EXPENSE' && t.category === 'MAINTENANCE').reduce((sum, t) => sum + t.amount, 0) },
+                    { cat: 'Kebutuhan Rumah', color: 'bg-emerald-500', total: transactions.filter(t => t.type === 'EXPENSE' && t.category === 'HOUSEHOLD').reduce((sum, t) => sum + t.amount, 0) },
+                    { cat: 'Dana Darurat', color: 'bg-amber-500', total: transactions.filter(t => t.type === 'EXPENSE' && t.category === 'EMERGENCY').reduce((sum, t) => sum + t.amount, 0) },
+                    { cat: 'Lainnya', color: 'bg-blue-500', total: transactions.filter(t => t.type === 'EXPENSE' && !['MAINTENANCE', 'HOUSEHOLD', 'EMERGENCY'].includes(t.category)).reduce((sum, t) => sum + t.amount, 0) }
+                  ].map((item, idx) => (
+                    <div key={idx} className="flex items-center justify-between text-xs p-2.5 rounded-xl bg-zinc-950/60 border border-zinc-800/80">
+                      <div className="flex items-center gap-2">
+                        <span className={`w-2.5 h-2.5 rounded-full ${item.color}`} />
+                        <span className="text-zinc-300 font-medium">{item.cat}</span>
+                      </div>
+                      <span className="font-mono font-bold text-white">
+                        Rp {item.total.toLocaleString('id-ID')}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
       )}
 
       {/* Split Bill Modal */}

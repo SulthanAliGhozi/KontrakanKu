@@ -11,6 +11,10 @@ import {
   Play,
   RotateCw,
   Plus,
+  Home,
+  Key,
+  Copy,
+  UserCircle,
 } from 'lucide-react';
 import { House, HouseMember, NeedCluster, TelegramSettings, User } from '../../types';
 import { api } from '../../services/apiClient';
@@ -32,6 +36,10 @@ export const SettingsHub: React.FC<SettingsHubProps> = ({
   users,
   currentUserId,
 }) => {
+  const currentMember = members.find(mx => mx.userId === currentUserId);
+  const isSuperAdmin = currentUserId === 'user_ghozi' || currentMember?.role === 'SUPER_ADMIN';
+  const isAdmin = isSuperAdmin || currentMember?.role === 'ADMIN' || currentMember?.role === 'OWNER';
+
   const [profName, setProfName] = useState(users.find(u => u.id === currentUserId)?.name || '');
   const [profUsername, setProfUsername] = useState(users.find(u => u.id === currentUserId)?.username || '');
   const [profPhone, setProfPhone] = useState(users.find(u => u.id === currentUserId)?.phone || '');
@@ -42,13 +50,40 @@ export const SettingsHub: React.FC<SettingsHubProps> = ({
   const handleSaveProfile = async () => {
     setIsSavingProf(true);
     try {
-      await fetch(`/api/users/${currentUserId}/profile`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: profName, username: profUsername, phone: profPhone, avatarUrl: profAvatar, password: profPass }) });
+      await api.updateUserProfile(currentUserId, {
+        name: profName,
+        username: profUsername,
+        phone: profPhone,
+        avatarUrl: profAvatar,
+        password: profPass.trim().length >= 6 ? profPass.trim() : undefined,
+      });
       alert('Profil berhasil diperbarui!');
-    } catch(e) { alert('Gagal'); }
-    setIsSavingProf(false);
+    } catch(e: any) {
+      alert(e.message || 'Gagal memperbarui profil');
+    } finally {
+      setIsSavingProf(false);
+    }
   };
 
-  const [activeTab, setActiveTab] = useState<'MEMBERS' | 'CLUSTERS' | 'AVAILABILITY' | 'TELEGRAM' | 'QA'>('MEMBERS');
+  const [activeTab, setActiveTab] = useState<'HOUSE_INFO' | 'MEMBERS' | 'CLUSTERS' | 'AVAILABILITY' | 'TELEGRAM' | 'QA' | 'PROFILE'>('HOUSE_INFO');
+
+  const [houseName, setHouseName] = useState(house?.name || '');
+  const [houseAddress, setHouseAddress] = useState(house?.address || '');
+  const [houseInviteCode, setHouseInviteCode] = useState(house?.inviteCode || '');
+  const [isSavingHouse, setIsSavingHouse] = useState(false);
+  
+  const handleSaveHouseInfo = async () => {
+    if(!houseName || !houseInviteCode) return alert('Nama dan Kode Undangan wajib diisi');
+    setIsSavingHouse(true);
+    try {
+      await api.updateHouse(house.id, { name: houseName, address: houseAddress, inviteCode: houseInviteCode.toUpperCase() });
+      alert('Profil Kontrakan berhasil diperbarui! Silakan refresh halaman.');
+    } catch (e: any) {
+      alert(e.message || 'Gagal menyimpan profil kontrakan');
+    } finally {
+      setIsSavingHouse(false);
+    }
+  };
 
   // Telegram Settings State
   const [telegramSettings, setTelegramSettings] = useState<TelegramSettings | null>(null);
@@ -184,10 +219,12 @@ export const SettingsHub: React.FC<SettingsHubProps> = ({
       {/* Tabs */}
       <div className="flex items-center gap-2 border-b border-zinc-800/80 pb-2 overflow-x-auto text-xs">
         {[
+          { id: 'HOUSE_INFO', label: 'Profil Rumah', icon: Home },
           { id: 'MEMBERS', label: 'Penghuni Rumah', icon: Users },
           { id: 'CLUSTERS', label: 'Kluster Kebutuhan', icon: Layers },
           { id: 'AVAILABILITY', label: 'Ketersediaan / Cuti', icon: Plane },
           { id: 'TELEGRAM', label: 'Integrasi Telegram', icon: Send },
+          { id: 'PROFILE', label: 'Profil Admin', icon: UserCircle },
           { id: 'QA', label: 'Verifikasi Logika Domain', icon: ShieldCheck },
         ].map((tab) => {
           const Icon = tab.icon;
@@ -208,6 +245,82 @@ export const SettingsHub: React.FC<SettingsHubProps> = ({
           );
         })}
       </div>
+
+      {/* TAB 0: HOUSE_INFO */}
+      {activeTab === 'HOUSE_INFO' && (
+        <div className="rounded-2xl border border-zinc-800 bg-zinc-900/70 p-5 space-y-5">
+          <div className="pb-3 border-b border-zinc-800">
+            <h3 className="text-sm font-bold text-white uppercase tracking-wider">
+              Profil & Identitas Rumah Kontrakan
+            </h3>
+            <p className="text-xs text-zinc-400 mt-0.5">
+              Kelola nama kontrakan, alamat lengkap, dan kode undangan resmi untuk penghuni baru.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 text-xs max-w-xl">
+            <div>
+              <label className="block font-semibold text-zinc-300 mb-1">Nama Kontrakan</label>
+              <input
+                type="text"
+                value={houseName}
+                onChange={(e) => setHouseName(e.target.value)}
+                placeholder="Nama kontrakan"
+                className="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2 text-white text-sm"
+              />
+            </div>
+
+            <div>
+              <label className="block font-semibold text-zinc-300 mb-1">Alamat Lengkap</label>
+              <textarea
+                value={houseAddress}
+                onChange={(e) => setHouseAddress(e.target.value)}
+                placeholder="Alamat kontrakan..."
+                rows={3}
+                className="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2 text-white text-sm"
+              />
+            </div>
+
+            <div>
+              <label className="block font-semibold text-zinc-300 mb-1">Kode Undangan Penghuni Baru</label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={houseInviteCode}
+                  onChange={(e) => setHouseInviteCode(e.target.value.toUpperCase())}
+                  placeholder="MARKASW"
+                  className="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2 text-white font-mono text-sm uppercase"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard.writeText(houseInviteCode);
+                    alert('Kode undangan berhasil disalin!');
+                  }}
+                  className="px-3 py-2 rounded-xl border border-zinc-700 bg-zinc-800 hover:bg-zinc-750 text-xs font-semibold text-zinc-300 flex items-center gap-1.5 cursor-pointer"
+                  title="Salin kode"
+                >
+                  <Copy className="w-3.5 h-3.5" />
+                  <span>Salin</span>
+                </button>
+              </div>
+              <p className="text-[11px] text-zinc-500 mt-1">
+                Berikan kode undangan ini kepada calon penghuni agar saat mendaftar langsung bergabung ke kontrakan ini.
+              </p>
+            </div>
+
+            <div className="pt-3">
+              <button
+                onClick={handleSaveHouseInfo}
+                disabled={isSavingHouse}
+                className="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 font-bold text-black text-xs transition disabled:opacity-50 cursor-pointer"
+              >
+                {isSavingHouse ? 'Menyimpan...' : 'Simpan Profil Rumah'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* TAB 1: MEMBERS */}
       {activeTab === 'MEMBERS' && (
@@ -255,13 +368,12 @@ export const SettingsHub: React.FC<SettingsHubProps> = ({
                   <button onClick={async () => {
                      if (!newClusterName) return;
                      try {
-                        const { api } = require('../../services/apiClient');
                         await api.createCluster({ houseId: house.id, name: newClusterName, description: newClusterDesc, memberIds: newClusterMembers });
                         window.dispatchEvent(new CustomEvent('refreshCalendar')); // trigger reload in App.tsx
                         setIsCreatingCluster(false);
                         setNewClusterName('');
                         setNewClusterMembers([]);
-                     } catch(e) { alert('Gagal'); }
+                     } catch(e: any) { alert(e.message || 'Gagal menyimpan kluster'); }
                   }} className="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-black font-bold rounded-lg text-xs transition">Simpan Kluster</button>
                </div>
             </div>
@@ -295,7 +407,7 @@ export const SettingsHub: React.FC<SettingsHubProps> = ({
                         })}
                       </span>
                       <div className="flex items-center gap-2 mt-2">
-                        {currentUserId === 'user_ghozi' && m.userId !== 'user_ghozi' && (
+                        {isSuperAdmin && m.userId !== 'user_ghozi' && (
                           <>
                             <select 
                               className="bg-zinc-800 border border-zinc-700 rounded-lg text-[10px] px-2 py-1 text-white focus:outline-none"
@@ -325,7 +437,7 @@ export const SettingsHub: React.FC<SettingsHubProps> = ({
                                   }
                                 }
                               }}
-                              className="px-2 py-1 bg-red-500/20 text-red-400 hover:bg-red-500/30 rounded-lg text-[10px] font-bold"
+                              className="px-2 py-1 bg-red-500/20 text-red-400 hover:bg-red-500/30 rounded-lg text-[10px] font-bold cursor-pointer"
                             >
                               Hapus Akun
                             </button>
@@ -336,34 +448,32 @@ export const SettingsHub: React.FC<SettingsHubProps> = ({
                   </div>
 
                   <div className="text-right">
-                    <Badge variant={m.role === 'ADMIN' ? 'purple' : 'default'} size="sm">
-                      {m.role === 'OWNER'
+                    <Badge variant={m.role === 'SUPER_ADMIN' ? 'danger' : m.role === 'ADMIN' ? 'purple' : 'default'} size="sm">
+                      {m.role === 'SUPER_ADMIN'
+                        ? 'Super Admin'
+                        : m.role === 'OWNER'
                         ? 'Pemilik'
                         : m.role === 'ADMIN'
                         ? 'Admin Rumah'
-                        : 'Penghuni Tetap'}
+                        : 'Penghuni'}
                     </Badge>
                   </div>
                   
-                  {currentUserId && members.find(mx => mx.userId === currentUserId)?.role === 'ADMIN' && (
+                  {isAdmin && (
                     <button 
                       onClick={async () => {
-                        const newPass = prompt(`Masukkan kata sandi baru untuk ${m.user?.name || m.user?.username}:`);
+                        const newPass = prompt(`Masukkan kata sandi baru untuk ${m.user?.name || m.user?.username} (minimal 6 karakter):`);
                         if (!newPass) return;
+                        if (newPass.length < 6) return alert('Kata sandi minimal 6 karakter');
                         if (!confirm(`Yakin ingin mengubah sandi ${m.user?.name}?`)) return;
                         try {
-                          const res = await fetch(`/api/users/${m.userId}/profile`, {
-                            method: 'PUT',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ password: newPass })
-                          });
-                          if (!res.ok) throw new Error('Gagal mereset sandi');
+                          await api.updateUserProfile(m.userId, { password: newPass });
                           alert('Sandi berhasil direset!');
                         } catch (e: any) {
                           alert(e.message || 'Gagal reset sandi');
                         }
                       }}
-                      className="mt-2 text-[10px] bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-2 py-1 rounded"
+                      className="mt-2 text-[10px] bg-zinc-800 hover:bg-zinc-750 text-zinc-300 px-2.5 py-1 rounded-lg border border-zinc-700 font-semibold cursor-pointer"
                     >
                       Reset Sandi
                     </button>
@@ -571,16 +681,27 @@ export const SettingsHub: React.FC<SettingsHubProps> = ({
                   <input 
                      type="file" 
                      accept="image/*" 
-                     onChange={(e) => {
+                     onChange={async (e) => {
                         const file = e.target.files?.[0];
                         if (file) {
-                           const reader = new FileReader();
-                           reader.onload = (ev) => {
-                              if (ev.target?.result) {
-                                 setProfAvatar(ev.target.result as string);
-                              }
-                           };
-                           reader.readAsDataURL(file);
+                           // Gunakan Multer Endpoint
+                           const formData = new FormData();
+                           formData.append('avatar', file);
+                           
+                           try {
+                             const token = JSON.parse(localStorage.getItem('kontrakanku_session_v4') || '{}').token;
+                             const res = await fetch('/api/upload-avatar', {
+                               method: 'POST',
+                               headers: { 'Authorization': 'Bearer ' + token },
+                               body: formData
+                             });
+                             const data = await res.json();
+                             if (data.avatarUrl) {
+                               setProfAvatar(data.avatarUrl);
+                             }
+                           } catch (err) {
+                             console.error('Gagal upload', err);
+                           }
                         }
                      }} 
                      className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2 text-white focus:border-emerald-500 focus:outline-none text-sm file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-emerald-500/20 file:text-emerald-400 hover:file:bg-emerald-500/30" 

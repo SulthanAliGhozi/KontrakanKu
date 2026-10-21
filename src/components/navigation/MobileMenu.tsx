@@ -12,7 +12,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
   onNavigate,
   openMaintenanceCount = 0,
 }) => {
-  const { logout, user, isAdmin } = useAuth();
+  const { signOut, user, isAdmin } = useAuth();
   
   let menuItems = [
     { id: 'pemeliharaan', label: 'Pemeliharaan', icon: Wrench, badge: openMaintenanceCount > 0 ? openMaintenanceCount : null },
@@ -65,7 +65,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
 
       <div className="pt-4">
         <button
-          onClick={logout}
+          onClick={signOut}
           className="w-full flex items-center justify-center space-x-2 p-4 rounded-2xl border border-rose-500/20 bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 transition active:scale-[0.98]"
         >
           <LogOut className="w-5 h-5" />

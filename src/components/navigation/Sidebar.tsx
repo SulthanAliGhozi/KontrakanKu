@@ -19,7 +19,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   isAdmin = false,
 }) => {
   let navItems = [
-    { id: 'home', label: 'Home', icon: Home, badge: null },
+    { id: 'dashboard', label: 'Dashboard', icon: Home, badge: null },
     { id: 'kebutuhan', label: 'Kebutuhan', icon: Package, badge: pendingDutiesCount > 0 ? pendingDutiesCount : null },
     { id: 'kalender', label: 'Kalender', icon: Calendar, badge: null },
     { id: 'keuangan', label: 'Keuangan', icon: Wallet, badge: unsettledDebtsCount > 0 ? unsettledDebtsCount : null },

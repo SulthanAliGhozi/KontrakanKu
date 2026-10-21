@@ -271,9 +271,9 @@ export const GenerateQRISModal: React.FC<GenerateQRISModalProps> = ({
       onClose={onClose}
       title="Generate QRIS Pembayaran Rumah"
       subtitle={`Buat kode QRIS dinamis untuk iuran kas, kebutuhan, atau pelunasan di ${houseName}.`}
-      maxWidth="xl"
+      maxWidth="2xl"
     >
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-6 text-zinc-100">
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-5 text-zinc-100">
         {/* LEFT COLUMN: Controls & Form */}
         <div className="md:col-span-6 space-y-4">
           {/* Target Recipient Selector */}

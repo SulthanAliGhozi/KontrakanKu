@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { api, CommandState } from './services/apiClient';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { AuthView } from './components/auth/AuthView';
 import { Header } from './components/navigation/Header';
 import { Sidebar } from './components/navigation/Sidebar';
@@ -26,11 +28,20 @@ import { EditProfileModal } from './components/profile/EditProfileModal';
 
 function AppContent() {
   const { user: authUser, session, isAdmin: authIsAdmin, isSuperAdmin: authIsSuperAdmin, loading: authLoading, signOut } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Derive active tab from URL path
+  const currentPath = location.pathname.replace(/^\//, '') || 'dashboard';
+  const activeTab = currentPath.split('/')[0] || 'dashboard';
+
+  const handleNavigate = (tab: string) => {
+    navigate('/' + tab);
+  };
 
   const [state, setState] = useState<CommandState | null>(null);
   const [users, setUsers] = useState<User[]>([]);
-  const [activeTab, setActiveTab] = useState<string>('home');
-  const [currentHouseId, setCurrentHouseId] = useState<string | undefined>(undefined);
+  const [currentHouseId, setCurrentHouseId] = useState<string>('house_harmoni');
   const [currentUserId, setCurrentUserId] = useState<string>(() => authUser?.id || 'user_ghozi');
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -64,26 +75,34 @@ function AppContent() {
   const loadHouseState = async (userIdToUse?: string, houseIdToUse?: string) => {
     try {
       setError(null);
-      const uid = userIdToUse || currentUserId;
-      const hid = houseIdToUse || currentHouseId;
+      const uid = userIdToUse || currentUserId || authUser?.id || 'user_ghozi';
+      const hid = houseIdToUse || currentHouseId || 'house_harmoni';
       const [cmdState, allUsers, calEvents] = await Promise.all([
         api.getCurrentState(hid, uid),
-        api.getUsers(),
-        api.getCalendarEvents(hid)
+        api.getUsers().catch(() => []),
+        api.getCalendarEvents(hid).catch(() => []),
       ]);
       setState(cmdState);
-      setUsers(allUsers);
+      setUsers(allUsers || []);
       setCalendarEvents(calEvents || []);
-      if (!currentHouseId) {
+      if (cmdState.house?.id && currentHouseId !== cmdState.house.id) {
         setCurrentHouseId(cmdState.house.id);
       }
 
       // Load calendar & finance in parallel
       const [events, fin] = await Promise.all([
-        api.getCalendarEvents(cmdState.house.id),
-        api.getFinanceOverview(cmdState.house.id),
+        api.getCalendarEvents(cmdState.house.id).catch(() => []),
+        api.getFinanceOverview(cmdState.house.id).catch(() => ({
+          wallet: cmdState.wallet,
+          transactions: [],
+          contributions: [],
+          splitBills: [],
+          settlements: [],
+          netBalances: [],
+          settlementPlan: [],
+        })),
       ]);
-      setCalendarEvents(events);
+      setCalendarEvents(events || []);
       setFinanceData(fin);
     } catch (err: any) {
       console.error('Failed to load state:', err);
@@ -222,11 +241,39 @@ function AppContent() {
 
   // Not Logged In -> Show Real Auth View
   if (!session || !authUser) {
-    return <AuthView />;
+    return (
+      <Routes>
+        <Route path="/login" element={<AuthView />} />
+        <Route path="/register" element={<AuthView />} />
+        <Route path="/reset-password" element={<AuthView />} />
+        <Route path="*" element={<Navigate to="/login" replace />} />
+      </Routes>
+    );
   }
 
   // Initial App Data Loading
-  if (isLoading && !state) {
+  if (!state) {
+    if (error) {
+      return (
+        <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center p-4 text-center">
+          <div className="rounded-2xl border border-rose-500/30 bg-rose-950/20 p-6 max-w-md">
+            <h2 className="text-lg font-bold text-rose-300 mb-2">Terjadi Gangguan</h2>
+            <p className="text-xs text-rose-200/80 mb-4">{error}</p>
+            <button
+              onClick={() => {
+                setIsLoading(true);
+                setError(null);
+                loadHouseState();
+              }}
+              className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-xs font-bold text-white transition"
+            >
+              Coba Lagi
+            </button>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center text-zinc-400 gap-3">
         <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 animate-pulse">
@@ -235,23 +282,6 @@ function AppContent() {
         <div className="flex items-center gap-2 text-xs font-semibold text-zinc-300">
           <Loader2 className="w-4 h-4 animate-spin text-emerald-400" />
           <span>Memuat KONTRAKAN MARKAS WARUNG...</span>
-        </div>
-      </div>
-    );
-  }
-
-  if (error || !state) {
-    return (
-      <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center p-4 text-center">
-        <div className="rounded-2xl border border-rose-500/30 bg-rose-950/20 p-6 max-w-md">
-          <h2 className="text-lg font-bold text-rose-300 mb-2">Terjadi Gangguan</h2>
-          <p className="text-xs text-rose-200/80 mb-4">{error || 'Tidak dapat terhubung ke server'}</p>
-          <button
-            onClick={() => loadHouseState()}
-            className="px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-xs font-bold text-white transition"
-          >
-            Coba Lagi
-          </button>
         </div>
       </div>
     );
@@ -285,10 +315,10 @@ function AppContent() {
         onSelectUser={handleUserChange}
         notifications={[]}
         onMarkNotificationsRead={() => api.markNotificationRead(undefined, currentUserId)}
-        onNavigate={(tab) => setActiveTab(tab)}
-        onOpenHouseManager={() => setIsHouseManagerOpen(true)}
+        onNavigate={handleNavigate}
+        onOpenHouseManager={isSuperAdmin ? () => setIsHouseManagerOpen(true) : undefined}
         onOpenUserQRIS={() => setIsUserQRISModalOpen(true)}
-        onOpenEditProfile={() => setActiveTab('profil')}
+        onOpenEditProfile={() => handleNavigate('profil')}
         onSignOut={signOut}
       />
 
@@ -296,9 +326,9 @@ function AppContent() {
       <div className="mx-auto flex w-full max-w-7xl flex-1">
         {/* Desktop Sidebar */}
         <Sidebar
-          isAdmin={authIsAdmin}
+          isAdmin={isAdmin}
           activeTab={activeTab}
-          onTabChange={(tab) => setActiveTab(tab)}
+          onTabChange={handleNavigate}
           pendingDutiesCount={
             state.needs.filter(
               (n) => n.dutyEnabled && n.currentDutyMemberId === currentUserId && n.status !== 'AVAILABLE' && !n.archived
@@ -314,101 +344,128 @@ function AppContent() {
 
         {/* Content View Area */}
         <main className="flex-1 px-4 py-6 sm:px-8 max-w-5xl overflow-x-hidden">
-          {activeTab === 'home' && (
-            <CommandCenter
-              state={state}
-              onNavigate={(tab) => setActiveTab(tab)}
-              onSelectNeed={(id) => setSelectedNeedId(id)}
-              onQuickRecordPurchase={(need) => handleOpenRecordPurchase(need)}
-            />
-          )}
+          <Routes>
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            
+            <Route path="/dashboard" element={
+              <ErrorBoundary fallbackMessage="Gagal memuat Dashboard Home.">
+                <CommandCenter
+                  state={state}
+                  onNavigate={handleNavigate}
+                  onSelectNeed={(id) => setSelectedNeedId(id)}
+                  onQuickRecordPurchase={(need) => handleOpenRecordPurchase(need)}
+                />
+              </ErrorBoundary>
+            } />
 
-          {activeTab === 'kebutuhan' && (
-            <NeedsHub
-              needs={state.needs}
-              clusters={state.clusters}
-              users={users}
-              currentUserId={currentUserId}
-              isAdmin={isAdmin}
-              onSelectNeed={(id) => setSelectedNeedId(id)}
-              onOpenRecordPurchase={(need) => handleOpenRecordPurchase(need)}
-              onOpenCreateNeed={() => setIsCreateNeedOpen(true)}
-              onOpenConfigureNeed={(need) => setSelectedNeedToConfigure(need)}
-            />
-          )}
+            <Route path="/kebutuhan" element={
+              <ErrorBoundary fallbackMessage="Gagal memuat Hub Kebutuhan.">
+                <NeedsHub
+                  needs={state.needs}
+                  clusters={state.clusters}
+                  users={users}
+                  currentUserId={currentUserId}
+                  isAdmin={isAdmin}
+                  onSelectNeed={(id) => setSelectedNeedId(id)}
+                  onOpenRecordPurchase={(need) => handleOpenRecordPurchase(need)}
+                  onOpenCreateNeed={() => setIsCreateNeedOpen(true)}
+                  onOpenConfigureNeed={(need) => setSelectedNeedToConfigure(need)}
+                />
+              </ErrorBoundary>
+            } />
 
-          {activeTab === 'kalender' && (
-            <HouseCalendar events={calendarEvents} />
-          )}
+            <Route path="/kalender" element={
+              <ErrorBoundary fallbackMessage="Gagal memuat Kalender Rumah.">
+                <HouseCalendar events={calendarEvents} houseId={state.house.id} />
+              </ErrorBoundary>
+            } />
 
-          {activeTab === 'keuangan' && (
-            <FinanceHub
-              wallet={state.wallet}
-              netBalances={state.netBalances}
-              settlementPlan={state.settlementPlan}
-              transactions={financeData.transactions}
-              contributions={financeData.contributions}
-              splitBills={financeData.splitBills}
-              settlements={financeData.settlements}
-              currentUserId={currentUserId}
-              users={users}
-              onPaySettlement={handlePaySettlement}
-              onConfirmSettlement={handleConfirmSettlement}
-              onCreateSplitBill={handleCreateSplitBill}
-              onPayContribution={handlePayContribution}
-              onCreateWalletTx={handleCreateWalletTx}
-              onRefresh={() => loadHouseState()}
-            />
-          )}
+            <Route path="/keuangan" element={
+              <ErrorBoundary fallbackMessage="Gagal memuat Hub Keuangan & QRIS.">
+                <FinanceHub
+                  onOpenUserQRIS={() => setIsUserQRISModalOpen(true)}
+                  wallet={state.wallet}
+                  netBalances={state.netBalances}
+                  settlementPlan={state.settlementPlan}
+                  transactions={financeData.transactions}
+                  contributions={financeData.contributions}
+                  splitBills={financeData.splitBills}
+                  settlements={financeData.settlements}
+                  currentUserId={currentUserId}
+                  users={users}
+                  onPaySettlement={handlePaySettlement}
+                  onConfirmSettlement={handleConfirmSettlement}
+                  onCreateSplitBill={handleCreateSplitBill}
+                  onPayContribution={handlePayContribution}
+                  onCreateWalletTx={handleCreateWalletTx}
+                  onRefresh={() => loadHouseState()}
+                />
+              </ErrorBoundary>
+            } />
 
-          {activeTab === 'pemeliharaan' && (
-            <MaintenanceHub
-              tickets={state.activeMaintenance}
-              users={users}
-              currentUserId={currentUserId}
-              onCreateTicket={handleCreateTicket}
-              onUpdateStatus={handleUpdateTicketStatus}
-              onReimburse={handleReimburseTicket}
-              onRefresh={() => loadHouseState()}
-            />
-          )}
+            <Route path="/pemeliharaan" element={
+              <ErrorBoundary fallbackMessage="Gagal memuat Hub Pemeliharaan.">
+                <MaintenanceHub
+                  tickets={state.activeMaintenance}
+                  users={users}
+                  currentUserId={currentUserId}
+                  onCreateTicket={handleCreateTicket}
+                  onUpdateStatus={handleUpdateTicketStatus}
+                  onReimburse={handleReimburseTicket}
+                  onRefresh={() => loadHouseState()}
+                />
+              </ErrorBoundary>
+            } />
 
-          {activeTab === 'aktivitas' && (
-            <ActivityHub
-              houseId={state.house.id}
-              activities={state.recentActivities}
-              users={users}
-            />
-          )}
+            <Route path="/aktivitas" element={
+              <ErrorBoundary fallbackMessage="Gagal memuat Rekap Aktivitas.">
+                <ActivityHub
+                  houseId={state.house.id}
+                  activities={state.recentActivities}
+                  users={users}
+                />
+              </ErrorBoundary>
+            } />
 
-          {activeTab === 'profil' && (
-            <ProfileHub users={users} currentUserId={currentUserId} />
-          )}
+            <Route path="/profil" element={
+              <ErrorBoundary fallbackMessage="Gagal memuat Profil.">
+                <ProfileHub users={users} currentUserId={currentUserId} />
+              </ErrorBoundary>
+            } />
 
-          
-          {activeTab === 'lainnya' && (
-            <MobileMenu
-              onNavigate={(tab) => setActiveTab(tab)}
-              openMaintenanceCount={state.activeMaintenance.filter(m => m.status !== 'RESOLVED').length}
-            />
-          )}
+            <Route path="/lainnya" element={
+              <ErrorBoundary fallbackMessage="Gagal memuat Menu Lainnya.">
+                <MobileMenu
+                  onNavigate={handleNavigate}
+                  openMaintenanceCount={state.activeMaintenance.filter(m => m.status !== 'RESOLVED').length}
+                />
+              </ErrorBoundary>
+            } />
 
-          {activeTab === 'pengaturan' && (
-            <SettingsHub
-              house={state.house}
-              members={state.members}
-              clusters={state.clusters}
-              users={users}
-              currentUserId={currentUserId}
-            />
-          )}
+            <Route path="/pengaturan" element={
+              <ErrorBoundary fallbackMessage="Gagal memuat Pengaturan Rumah.">
+                {!isAdmin ? (
+                  <div className="p-8 text-center text-zinc-500">Anda tidak memiliki akses ke halaman ini.</div>
+                ) : (
+                <SettingsHub
+                  house={state.house}
+                  members={state.members}
+                  clusters={state.clusters}
+                  users={users}
+                  currentUserId={currentUserId}
+                />
+                )}
+              </ErrorBoundary>
+            } />
+            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          </Routes>
         </main>
       </div>
 
       {/* Mobile Bottom Navigation */}
       <BottomNav
         activeTab={activeTab}
-        onTabChange={(tab) => setActiveTab(tab)}
+        onTabChange={handleNavigate}
         actionRequiredCount={state.actionItems.length}
       />
 
@@ -456,6 +513,7 @@ function AppContent() {
         isOpen={isCreateNeedOpen}
         onClose={() => setIsCreateNeedOpen(false)}
         clusters={state.clusters}
+        members={state.members}
         isAdmin={isAdmin}
         onSubmit={handleCreateNeedSubmit}
       />

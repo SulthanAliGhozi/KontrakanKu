@@ -40,6 +40,8 @@ export interface Need {
   color: string;
   type: string; // CONSUMABLE | DURABLE
   dutyEnabled: boolean;
+  rotationLogic?: string;
+  rotationParticipants?: string[];
   clusterId?: string; // UUID FK
   averageConsumptionDays: number;
   expectedNextPurchaseDate?: string;

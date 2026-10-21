@@ -42,6 +42,7 @@ export async function seedInitialCloudSqlData() {
       await db.insert(users).values({
         uid: 'user_ghozi',
         email: SUPER_ADMIN_EMAIL,
+        username: 'admin',
         name: 'Sulthan Ali Ghozi',
         passwordHash: hash,
         passwordSalt: salt,
@@ -53,6 +54,7 @@ export async function seedInitialCloudSqlData() {
       await db.update(users)
         .set({
           email: SUPER_ADMIN_EMAIL,
+          username: 'admin',
           name: 'Sulthan Ali Ghozi',
           passwordHash: hash,
           passwordSalt: salt,

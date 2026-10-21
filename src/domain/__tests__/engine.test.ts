@@ -4,7 +4,7 @@ import { calculateConsumptionMetrics } from '../consumptionEngine.js';
 import { validateQRISPayload, injectQRISAmount, calculateCRC16, createSampleQRISPayload } from '../qrisEngine.js';
 import { calculateSplitBill } from '../splitBillValidator.js';
 import { calculateWalletBalance } from '../walletEngine.js';
-import { AvailabilityPeriod, DutyLedgerEntry, Need, NeedCluster, NeedPurchase, SplitBill, WalletTransaction } from '../../types.js';
+import { AvailabilityPeriod, DutyLedgerEntry, Need, NeedCluster, NeedPurchase, SplitBill, WalletTransaction } from '../../types/index.ts';
 
 export function runDomainUnitTests(): { passed: boolean; results: { name: string; success: boolean; message?: string }[] } {
   const results: { name: string; success: boolean; message?: string }[] = [];

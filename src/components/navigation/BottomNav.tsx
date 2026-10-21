@@ -13,7 +13,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   actionRequiredCount = 0,
 }) => {
   const items = [
-    { id: 'home', label: 'Home', icon: Home, badge: actionRequiredCount > 0 ? actionRequiredCount : null },
+    { id: 'dashboard', label: 'Dashboard', icon: Home, badge: actionRequiredCount > 0 ? actionRequiredCount : null },
     { id: 'kebutuhan', label: 'Kebutuhan', icon: Package, badge: null },
     { id: 'kalender', label: 'Kalender', icon: Calendar, badge: null },
     { id: 'keuangan', label: 'Keuangan', icon: Wallet, badge: null },

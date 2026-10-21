@@ -22,6 +22,7 @@ export const houses = mysqlTable('houses', {
   id: varchar('id', { length: 255 }).primaryKey(),
   name: varchar('name', { length: 255 }).notNull(),
   address: varchar('address', { length: 255 }).notNull(),
+  inviteCode: varchar('invite_code', { length: 255 }).unique(),
   currency: varchar('currency', { length: 255 }).default('IDR'),
   rules: varchar('rules', { length: 255 }),
   createdAt: timestamp('created_at').defaultNow(),

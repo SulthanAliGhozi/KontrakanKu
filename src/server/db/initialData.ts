@@ -24,6 +24,7 @@ export const INITIAL_USERS: User[] = [
   {
     id: 'user_ghozi',
     name: 'Sulthan Ali Ghozi',
+    username: 'admin',
     email: 's.a.ghozi@gmail.com',
     avatarUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
     phone: '081234567890',

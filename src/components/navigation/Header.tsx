@@ -43,15 +43,15 @@ export const Header: React.FC<HeaderProps> = ({
   const houseAddress = house?.address || 'GBA 3 Blok A8 no.5, RT.2/RW.10, Cipagalo, Kec. Bojongsoang, Kabupaten Bandung, Jawa Barat 40287';
 
   return (
-    <header className="sticky top-0 z-40 border-b border-zinc-800/80 bg-zinc-950/85 backdrop-blur-md px-4 py-3 sm:px-6">
+    <header className="sticky top-0 z-40 border-b border-zinc-800/80 bg-zinc-950/90 backdrop-blur-md px-4 sm:px-6 pt-3.5 pb-3 sm:pt-4 sm:pb-3.5 transition-all">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-3">
         {/* House Identifier & Brand (Clickable to open House Manager) */}
         <button
           onClick={onOpenHouseManager}
-          className="flex items-center gap-3 text-left group transition p-1.5 -m-1.5 rounded-2xl hover:bg-zinc-900/80 min-w-0"
+          className={`flex items-center gap-3 text-left transition p-1.5 -m-1.5 rounded-2xl min-w-0 ${onOpenHouseManager ? 'group hover:bg-zinc-900/80 cursor-pointer' : 'cursor-default'}`}
           title="Klik untuk kelola atau beralih rumah kontrakan"
         >
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-400 font-black shadow-inner group-hover:scale-105 transition-transform text-sm">
+          <div className="flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-400 font-black shadow-inner group-hover:scale-105 transition-transform text-xs sm:text-sm">
             MW
           </div>
           <div className="min-w-0">
@@ -73,12 +73,12 @@ export const Header: React.FC<HeaderProps> = ({
         </button>
 
         {/* Right Tools: Switcher, PWA, Notifications */}
-        <div className="flex items-center gap-2 sm:gap-3">
+        <div className="flex items-center gap-2 sm:gap-2.5">
           {/* PWA Install Button */}
           {isInstallable && (
             <button
               onClick={install}
-              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-lg transition"
+              className="hidden sm:flex items-center gap-1.5 h-9 sm:h-10 px-3 text-xs font-semibold text-white bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-xl transition shadow-xs"
             >
               <Download className="w-3.5 h-3.5 text-emerald-400" />
               <span>Install App</span>
@@ -88,7 +88,7 @@ export const Header: React.FC<HeaderProps> = ({
           {isIOS && (
             <button
               onClick={() => setShowIOSGuide(true)}
-              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-zinc-300 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-lg transition"
+              className="hidden sm:flex items-center gap-1.5 h-9 sm:h-10 px-3 text-xs font-semibold text-zinc-300 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-xl transition shadow-xs"
             >
               <Download className="w-3.5 h-3.5 text-sky-400" />
               <span>Install iOS</span>
@@ -98,11 +98,11 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Quick Generate QRIS Trigger */}
           <button
             onClick={() => setShowQRISModal(true)}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-bold text-emerald-300 bg-emerald-950/70 hover:bg-emerald-900/80 border border-emerald-800/80 rounded-xl transition shadow-xs"
+            className="flex items-center gap-1.5 h-9 sm:h-10 px-3 text-xs font-bold text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20 active:scale-95 border border-emerald-500/30 rounded-xl transition shadow-xs cursor-pointer"
             title="Generate QRIS Pembayaran Rumah"
           >
-            <QrCode className="w-3.5 h-3.5 text-emerald-400" />
-            <span className="hidden sm:inline">QRIS</span>
+            <QrCode className="w-4 h-4 text-emerald-400 shrink-0" />
+            <span className="hidden sm:inline font-bold">QRIS</span>
           </button>
 
           {/* Active User Switcher / Login Dropdown */}
@@ -112,13 +112,13 @@ export const Header: React.FC<HeaderProps> = ({
                 setShowUserMenu(!showUserMenu);
                 setShowNotifMenu(false);
               }}
-              className="flex items-center gap-2 rounded-xl border border-zinc-800 bg-zinc-900 px-2.5 py-1.5 hover:border-zinc-700 hover:bg-zinc-900 transition"
+              className="flex items-center gap-2.5 h-9 sm:h-10 rounded-xl border border-zinc-800 bg-zinc-900/90 px-3 hover:border-zinc-700 hover:bg-zinc-800/80 transition cursor-pointer shadow-xs"
               title="Menu Akun & Profil Penghuni"
             >
               <img
                 src={currentUser?.avatarUrl}
                 alt={currentUser?.name}
-                className="h-6 w-6 rounded-full object-cover ring-1 ring-emerald-500/50"
+                className="h-6 w-6 rounded-full object-cover ring-1 ring-emerald-500/50 shrink-0"
               />
               <div className="text-left hidden sm:block">
                 <span className="block text-xs font-semibold text-zinc-200 leading-none truncate max-w-[100px]">
@@ -128,7 +128,7 @@ export const Header: React.FC<HeaderProps> = ({
                   {currentUser?.email ? currentUser.email.split('@')[0] : 'Penghuni'}
                 </span>
               </div>
-              <ChevronDown className="h-3.5 w-3.5 text-zinc-400" />
+              <ChevronDown className="h-3.5 w-3.5 text-zinc-400 shrink-0" />
             </button>
 
             {showUserMenu && (

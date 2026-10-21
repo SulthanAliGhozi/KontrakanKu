@@ -178,7 +178,29 @@ export const NeedsHub: React.FC<NeedsHubProps> = ({
       </div>
 
       {/* Needs Grid */}
-      {filteredNeeds.length === 0 ? (
+      
+      {needs.length === 0 && (
+        <div className="flex flex-col items-center justify-center p-8 sm:p-12 text-center rounded-2xl border-2 border-dashed border-zinc-800 bg-zinc-900/50">
+          <div className="w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center mb-4">
+            <Package className="w-8 h-8 text-emerald-500" />
+          </div>
+          <h3 className="text-lg font-bold text-white mb-2">Kontrakanmu Masih Kosong!</h3>
+          <p className="text-xs sm:text-sm text-zinc-400 max-w-md mx-auto mb-6">
+            Yuk, mulai atur kebutuhan bersama! Kamu bisa menambahkan kebutuhan seperti <b>Galon Air, Token Listrik, atau Gas</b>. Sistem akan otomatis mengatur siapa yang giliran beli bulan ini.
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <button
+              onClick={onOpenCreateNeed}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black text-sm font-bold shadow-lg shadow-emerald-500/20 transition-all cursor-pointer"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Tambah Kebutuhan Pertama</span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {needs.length > 0 && filteredNeeds.length === 0 ? (
         <div className="text-center py-12 border border-dashed border-zinc-800 rounded-3xl bg-zinc-950/30">
           <Package className="w-10 h-10 text-zinc-600 mx-auto mb-2" />
           <p className="text-sm font-semibold text-zinc-300">
@@ -194,8 +216,12 @@ export const NeedsHub: React.FC<NeedsHubProps> = ({
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredNeeds.map((need) => {
             const Icon = getNeedIcon(need.icon);
-            const dutyUser = users.find((u) => u.id === need.currentDutyMemberId);
-            const isMyDuty = need.currentDutyMemberId === currentUserId;
+            // Support pair logic (e.g. "uid1,uid2")
+            const dutyUserIds = need.currentDutyMemberId ? need.currentDutyMemberId.split(',') : [];
+            const dutyUsers = users.filter(u => dutyUserIds.includes(u.id));
+            const dutyUserName = dutyUsers.map(u => u.name).join(' & ');
+            const dutyUser = dutyUsers.length > 0 ? { ...dutyUsers[0], name: dutyUserName } : undefined;
+            const isMyDuty = dutyUserIds.includes(currentUserId || '');
             const cluster = clusters.find((c) => c.id === need.clusterId);
 
             return (

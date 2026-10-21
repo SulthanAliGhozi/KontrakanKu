@@ -1,4 +1,4 @@
-import { AvailabilityPeriod, DutyLedgerEntry, Need, NeedCluster } from '../types.js';
+import { AvailabilityPeriod, DutyLedgerEntry, Need, NeedCluster } from '../types/index.ts';
 
 export interface DutyBalanceRecord {
   memberId: string;

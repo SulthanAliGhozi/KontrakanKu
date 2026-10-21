@@ -228,7 +228,7 @@ export const UserQRISModal: React.FC<UserQRISModalProps> = ({
       onClose={onClose}
       title="QRIS Akun Saya (1 Akun 1 QRIS)"
       subtitle="Ubah QRIS statis dari merchant mana pun (GoPay, BCA, Mandiri, ShopeePay, DANA) menjadi QRIS Dinamis ber-nominal otomatis."
-      maxWidth="xl"
+      maxWidth="2xl"
     >
       {/* Navigation Tabs */}
       <div className="flex flex-wrap items-center gap-1.5 p-1 bg-zinc-900/90 border border-zinc-800 rounded-xl mb-5">

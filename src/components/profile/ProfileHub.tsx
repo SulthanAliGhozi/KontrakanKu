@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { User } from '../../types';
+import { api } from '../../services/apiClient';
 
 interface ProfileHubProps {
   users: User[];
@@ -14,6 +15,7 @@ export const ProfileHub: React.FC<ProfileHubProps> = ({ users, currentUserId }) 
   const [profAvatar, setProfAvatar] = useState(users.find(u => u.id === currentUserId)?.avatarUrl || '');
   const [profPass, setProfPass] = useState('');
   const [isSavingProf, setIsSavingProf] = useState(false);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
 
   React.useEffect(() => {
     const user = users.find(u => u.id === currentUserId);
@@ -29,14 +31,20 @@ export const ProfileHub: React.FC<ProfileHubProps> = ({ users, currentUserId }) 
   const handleSaveProfile = async () => {
     setIsSavingProf(true);
     try {
-      const res = await fetch(`/api/users/${currentUserId}/profile`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: profEmail, name: profName, username: profUsername, phone: profPhone, avatarUrl: profAvatar, password: profPass }) });
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || 'Gagal memperbarui profil');
-      }
+      await api.updateUserProfile(currentUserId, {
+        email: profEmail,
+        name: profName,
+        username: profUsername,
+        phone: profPhone,
+        avatarUrl: profAvatar,
+        password: profPass.trim().length >= 6 ? profPass.trim() : undefined,
+      });
       alert('Profil berhasil diperbarui!');
-    } catch(e) { alert('Gagal memperbarui profil'); }
-    setIsSavingProf(false);
+    } catch(e: any) {
+      alert(e.message || 'Gagal memperbarui profil');
+    } finally {
+      setIsSavingProf(false);
+    }
   };
 
   return (
@@ -84,21 +92,25 @@ export const ProfileHub: React.FC<ProfileHubProps> = ({ users, currentUserId }) 
                   <input 
                      type="file" 
                      accept="image/*" 
-                     onChange={(e) => {
+                     onChange={async (e) => {
                         const file = e.target.files?.[0];
                         if (file) {
-                           const reader = new FileReader();
-                           reader.onload = (ev) => {
-                              if (ev.target?.result) {
-                                 setProfAvatar(ev.target.result as string);
-                              }
-                           };
-                           reader.readAsDataURL(file);
+                           try {
+                              setIsUploadingAvatar(true);
+                              const url = await api.uploadAvatar(file);
+                              setProfAvatar(url);
+                           } catch (err: any) {
+                              alert(err.message || 'Gagal mengunggah foto profil');
+                           } finally {
+                              setIsUploadingAvatar(false);
+                           }
                         }
                      }} 
                      className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2 text-white focus:border-emerald-500 focus:outline-none text-sm file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-emerald-500/20 file:text-emerald-400 hover:file:bg-emerald-500/30" 
                   />
-                  <p className="text-[10px] text-zinc-500 mt-1">Pilih gambar dari perangkat Anda. Gambar akan otomatis tersimpan.</p>
+                  <p className="text-[10px] text-zinc-500 mt-1">
+                    {isUploadingAvatar ? 'Mengunggah foto...' : 'Pilih gambar dari perangkat Anda. Foto otomatis tersimpan di server.'}
+                  </p>
                </div>
                <div>
                   <label className="block text-zinc-400 mb-1 text-xs font-semibold">Kata Sandi Baru</label>

@@ -1,4 +1,4 @@
-import { SplitBillParticipant, SplitType } from '../types.js';
+import { SplitBillParticipant, SplitType } from '../types/index.ts';
 
 export interface SplitCalculationInput {
   totalAmount: number;

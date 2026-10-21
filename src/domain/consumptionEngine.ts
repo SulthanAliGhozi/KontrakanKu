@@ -1,4 +1,4 @@
-import { NeedPurchase } from '../types.js';
+import { NeedPurchase } from '../types/index.ts';
 
 export interface ConsumptionMetrics {
   hasSufficientData: boolean;

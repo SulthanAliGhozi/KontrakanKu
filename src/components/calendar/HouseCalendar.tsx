@@ -15,10 +15,11 @@ import { Badge } from '../ui/Badge';
 
 interface HouseCalendarProps {
   events: CalendarEvent[];
+  houseId?: string;
 }
 
-export const HouseCalendar: React.FC<HouseCalendarProps> = ({ events = [] }) => {
-  const [currentDate, setCurrentDate] = useState(new Date(2026, 8, 22)); // Sept 2026
+export const HouseCalendar: React.FC<HouseCalendarProps> = ({ events = [], houseId }) => {
+  const [currentDate, setCurrentDate] = useState(() => new Date());
   const [viewMode, setViewMode] = useState<'MONTH' | 'WEEK' | 'LIST'>('MONTH');
   const [filterType, setFilterType] = useState<string>('ALL');
   const { user } = useAuth();
@@ -312,7 +313,7 @@ export const HouseCalendar: React.FC<HouseCalendarProps> = ({ events = [] }) => 
                 try {
                   await api.createCalendarEvent({
                     id: 'evt_' + Date.now(),
-                    houseId: events[0]?.houseId || 'house_harmoni',
+                    houseId: houseId || events[0]?.houseId || 'house_harmoni',
                     title: newEventTitle,
                     description: newEventDesc,
                     date: selectedDate,

@@ -10,7 +10,7 @@ export interface AuthContextType {
   isSuperAdmin: boolean;
   loading: boolean;
   isConfigured: boolean;
-  signUp: (email: string, password: string, name: string, phone?: string, username?: string) => Promise<{ error: any }>;
+  signUp: (email: string, password: string, name: string, phone?: string, username?: string, inviteCode?: string) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ error: any; message?: string }>;
@@ -20,14 +20,6 @@ export interface AuthContextType {
 }
 
 const STORAGE_SESSION_KEY = 'kontrakanku_session_v4';
-
-export const SUPER_ADMIN_ACCOUNT: User = {
-  id: 'user_ghozi',
-  email: 's.a.ghozi@gmail.com',
-  name: 'Sulthan Ali Ghozi',
-  avatarUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
-  phone: '081234567890',
-};
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -115,11 +107,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setRole(newRole);
     if (newUser && newSession) {
       try {
+        const token = newSession?.token || (typeof newSession === 'string' ? newSession : undefined);
         localStorage.setItem(
           STORAGE_SESSION_KEY,
           JSON.stringify({
             user: newUser,
             session: newSession,
+            token,
             role: newRole,
           })
         );
@@ -150,15 +144,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const signUp = async (email: string, password: string, name: string, phone?: string, username?: string) => {
+  const signUp = async (email: string, password: string, name: string, phone?: string, username?: string, inviteCode?: string) => {
     setLoading(true);
     try {
       if (!email || !password) {
         throw new Error('Email dan kata sandi wajib diisi');
       }
-      const res = await api.register(name || email.split('@')[0], email, phone, password, username);
+      const res = await api.register(name || email.split('@')[0], email, phone, password, username, inviteCode);
       const cleanEmail = res.user?.email?.toLowerCase();
-      const isGhozi = cleanEmail === 's.a.ghozi@gmail.com' || cleanEmail === 's.a.ghozi@gmail.com';
       // Do NOT save session state so they are not automatically logged in.
       // Force them to login.
       return { error: null };
@@ -174,21 +167,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const resetPassword = async (email: string) => {
-    return {
-      error: null,
-      message: `Tautan pengaturan ulang kata sandi telah dikirim ke ${email}. Periksa kotak masuk atau spam Anda.`,
-    };
+    try {
+      const res = await api.resetPassword(email);
+      return {
+        error: null,
+        message: res.message || `Instruksi pemulihan kata sandi telah diproses untuk ${email}.`,
+      };
+    } catch (err: any) {
+      return {
+        error: err,
+        message: err.message,
+      };
+    }
   };
 
   const switchDemoUser = async (userId: string) => {
-    const target = demoUsers.find((u) => u.id === userId);
-    if (!target) return;
-    const cleanEmail = target.email.toLowerCase();
-    const isGhozi = target.id === 'user_ghozi' || cleanEmail === 's.a.ghozi@gmail.com' || cleanEmail === 's.a.ghozi@gmail.com';
-    const isOwner = isGhozi || target.id === 'user_ilaa' || cleanEmail === 'ilaaapedia@gmail.com';
-    const isAdm = isOwner || target.id === 'user_candra';
-    const targetRole: UserRole = isGhozi ? 'SUPER_ADMIN' : isOwner ? 'OWNER' : isAdm ? 'ADMIN' : 'MEMBER';
-    saveSessionState(target, { token: `token_${target.id}`, user: target }, targetRole);
+    try {
+      setLoading(true);
+      const res = await api.loginDemoUser(userId);
+      if (res.user && res.token) {
+        saveSessionState(res.user, { token: res.token, user: res.user }, res.role || 'MEMBER');
+      }
+    } catch (e) {
+      // Fallback to local if demo endpoint fails
+      const target = demoUsers.find((u) => u.id === userId);
+      if (!target) return;
+      const cleanEmail = target.email.toLowerCase();
+      const isGhozi = target.id === 'user_ghozi' || cleanEmail === 's.a.ghozi@gmail.com';
+      const isOwner = isGhozi || target.id === 'user_ilaa' || cleanEmail === 'ilaaapedia@gmail.com';
+      const isAdm = isOwner || target.id === 'user_candra';
+      const targetRole: UserRole = isGhozi ? 'SUPER_ADMIN' : isOwner ? 'OWNER' : isAdm ? 'ADMIN' : 'MEMBER';
+      saveSessionState(target, { token: `token_${target.id}`, user: target }, targetRole);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const refreshUser = async () => {
